@@ -1,0 +1,78 @@
+1) Cusstomer Mangemement
+
+Super user - company Name
+
+Add user for their comapany
+
+
+!) customer 
+
+
+class Customer(models.Model):
+    customer_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255, null=True, blank=True)
+    mobile_number = models.CharField(max_length=15)
+    address = models.TextField()
+
+    #Customer TYpe  : property Or project
+
+    #Customer Role :SUper ,Manager
+   
+    #user name 
+    #password
+    #Status
+
+#New UI remove Geolocation
+class Property(models.Model):
+    property_id = models.CharField(max_length=100)
+    property_name = models.CharField(max_length=100)
+    #state feild
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
+    village = models.ForeignKey(Village, on_delete=models.CASCADE)
+    taluk = models.ForeignKey(Taluk, on_delete=models.CASCADE)
+    survey_number = models.CharField(max_length=100)
+    survey_sub_division = models.CharField(max_length=100)
+    patta_number = models.CharField(max_length=100)
+    area = models.CharField(max_length=100)
+    fmb = models.FileField(upload_to='fmb_pdfs')
+
+
+class Project(models.Model):
+    project_id = models.CharField(max_length=100)
+    project_name = models.CharField(max_length=100)
+    project_state = models.CharField(max_length=100)
+    project_city = models.CharField(max_length=100)
+    project_descriptions = models.CharField(max_length=100)
+   
+   
+
+
+class ProjectGeolocation(models.Model):
+    property_id/project_id = models.ForeignKey(PropertyRegistration, related_name='geolocations', on_delete=models.CASCADE)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    refference_name = models.FloatField()
+
+    def __str__(self):
+        return f"Location for {self.property_registration.property_name}"
+    
+
+class DeviceGeoPoint(models.Model):
+    property_id/project_id = models.ForeignKey(PropertyDevice, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    geolocation = models.ForeignKey(Geolocation, on_delete=models.CASCADE)
+    device_movement = models.IntegerField(default=0)
+    last_updated = models.DateField(auto_now=True)  # Add this line
+    # Add other fields as needed
+
+    
+
+
+   
+
+
+
+
+
+
