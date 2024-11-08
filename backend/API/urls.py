@@ -9,7 +9,7 @@ from .views import (
     project_geolocation_list,
     add_property_registration, property_registrations_list, update_property_registration, delete_property_registration,
     add_property_device, property_device_list, update_property_device, delete_property_device,
-    geolocations_by_propertyregistrations, survey_details_api,project_list_by_customer,add_project_geolocation,delete_project_geolocation,update_project_geolocation,device_geopoint_list,add_device_geopoint,project_geolocation_list_byid,create_device_geo_points,device_geopoint_list_by_customer,add_property,property_list,update_property,delete_property,properties_by_customer,add_property_geolocation,delete_property_geolocation,update_property_geolocation,property_geolocation_list,device_property_geopoint_list_by_customer,property_list_by_customer,property_geolocation_list_byid,create_device_property_geo_points,propertygeolocation_by_customer,devices_list_by_customer,property_survey_details_api,project_survey_details_api,check_duplicate_device_id,dashboard_data_by_customer,customers_list_by_customer
+    geolocations_by_propertyregistrations, survey_details_api,project_list_by_customer,add_project_geolocation,delete_project_geolocation,update_project_geolocation,device_geopoint_list,add_device_geopoint,project_geolocation_list_byid,create_device_geo_points,device_geopoint_list_by_customer,add_property,property_list,update_property,delete_property,properties_by_customer,add_property_geolocation,delete_property_geolocation,update_property_geolocation,property_geolocation_list,device_property_geopoint_list_by_customer,property_list_by_customer,property_geolocation_list_byid,create_device_property_geo_points,propertygeolocation_by_customer,devices_list_by_customer,property_survey_details_api,project_survey_details_api,check_duplicate_device_id,dashboard_data_by_customer,customers_list_by_customer,device_current_status_check,device_status_detail_view,CustomerLoginAPI
 )
 
 urlpatterns = [
@@ -120,6 +120,13 @@ urlpatterns = [
     
     path('customers/added-by/<int:user_id>/', customers_list_by_customer, name='customers-list-by-customer'),
     path('customer/add/', add_customer, name='add-customer'),
+    
+    #API
+    path('CustomerLoginAPI/', CustomerLoginAPI.as_view(), name='customer-login-api'),  # Use .as_view() for class-based views
+    
+    path('DcurrentStatuscheck/', device_current_status_check, name='device-current-status'),
+    path('DStatusUpdate/', device_status_detail_view, name='device-status-detail'),
+    
     
    
 ]

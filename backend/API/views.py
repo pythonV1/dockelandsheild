@@ -1,19 +1,25 @@
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import parser_classes
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
 from rest_framework import viewsets
 from django.db.models import F
-from django.contrib.auth import authenticate
-from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser
+from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser,DeviceStatus
 from .serializers import DeviceSerializer,DistrictSerializer,TalukSerializer,VillageSerializer,CustomerSerializer,PropertyRegistrationSerializer,GeolocationSerializer,PropertyDeviceSerializer,PropertyDeviceDeviceSerializer,ProjectSerializer,ProjectGeolocationSerializer,DeviceGeoPointSerializer,PropertySerializer,PropertyGeolocationSerializer,PropertyDeviceGeoPointSerializer,CustomUserSerializer
 import json
 from json.decoder import JSONDecodeError
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+import hashlib
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
@@ -1509,4 +1515,147 @@ def my_view(request):
     active_device_types = DeviceType.objects.filter(status=True)
     return render(request, 'API/device_type_template.html', {'active_device_types': active_device_types})
 
+
+#API function
+
+
+API_KEY = "NMD6V5E9VAONUD2C"  # Example API key
+
+class CustomerLoginAPI(APIView):
+    def post(self, request):
+        # Verify API key
+        #print("helloo")
+        print(request.headers)
+
+        api_key = request.headers.get('api_key')
+        #if api_key != API_KEY:
+            #return Response({'error': f'Invalid API key22222222222: {API_KEY} {api_key}'}, status=status.HTTP_403_FORBIDDEN)
+
+
+        # Extract username and password from the request
+        email = request.data.get('user_name')
+        password = request.data.get('password')
+
+        try:
+            # Retrieve the customer instance based on username
+            #customer = CustomUser.objects.get(username=username)
+            customer = CustomUser.objects.get(email=email)
+            # Check if the provided password matches the stored password
+            if check_password(password, customer.password):
+                # Password matches; use the serializer to retrieve customer data
+                customer_data = CustomUserSerializer(customer).data
+                return Response({
+                    'message': 'Login successful',
+                    'customer': customer_data
+                }, status=status.HTTP_200_OK)
+            else:
+                # Invalid password
+                return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        except CustomUser.DoesNotExist:
+            # Customer with the given username not found
+            return Response({'error': 'Invalid credentials, customer not found'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+@api_view(['GET'])
+@parser_classes([MultiPartParser])
+@csrf_exempt
+def device_current_status_check(request):
+    if request.method == 'GET':
+        try:
+            # Extract query parameters from the request
+            device_id = request.query_params.get('device_id')
+            api_key = request.query_params.get('api_key')
+            
+            # Validate API key
+            if api_key != 'NMD6V5E9VAONUD2C':
+                return JsonResponse({"error": "Invalid API key"}, status=401)
+            
+            # Validate device_id
+            if not device_id:
+                return JsonResponse({"error": "Device ID is required"}, status=400)
+            
+            # Retrieve the device based on device_id
+            try:
+                device = Device.objects.get(device_id=device_id)
+            except Device.DoesNotExist:
+                return JsonResponse({"error": "Device not found"}, status=404)
+            
+            # Return the current status of the device
+            return JsonResponse({
+                #"device_id": device.device_id,
+                #"device_type": device.device_type.name,  # Assuming DeviceType has a 'name' field
+               # "battery_status": device.battery_status,
+                "device_status": device.device_status
+            }, status=200)
+        
+        except ValueError:
+            # Return an error response for invalid parameter values
+            return JsonResponse({"error": "Invalid parameter values"}, status=400)
+    else:
+        # Return a response indicating that the HTTP method is not allowed
+        return JsonResponse({"error": "Method Not Allowed"}, status=405)
+    
+
+
+@api_view(['GET', 'POST'])
+@parser_classes([MultiPartParser])
+@csrf_exempt
+def device_status_detail_view(request):
+    try:
+        # Extract query parameters from the request
+        device_id = request.query_params.get('device_id')
+        battery_status = request.query_params.get('battery_status')
+        device_status = request.query_params.get('device_status')
+        device_log = request.query_params.get('device_log')
+        device_lat = request.query_params.get('device_lat')
+        device_gforce = request.query_params.get('device_gforce')
+        device_movement = request.query_params.get('device_movement')
+        api_key = request.query_params.get('api_key')
+        
+        # Validate API key
+        if api_key != 'NMD6V5E9VAONUD2C':
+            return JsonResponse({"error": "Invalid API key"}, status=401)
+        
+        # Validate that required parameters are provided
+        if not all([device_id, battery_status, device_status, device_log, device_lat, device_gforce, device_movement]):
+            return JsonResponse({"error": "All parameters are required"}, status=400)
+        
+        # Retrieve the PropertyDeviceDevice object using device_id
+        device = get_object_or_404(Device, device_id=device_id)
+        customer = device.customer
+        customer_type = customer.customer_type
+
+        # Check customer type and update the appropriate model
+        if customer_type == 'property':
+        # For property type customers
+          property_device_geopoint = get_object_or_404(PropertyDeviceGeoPoint, device_id=device.id)
+          property_device_geopoint.device_movement = device_movement
+          property_device_geopoint.save()
+        
+    
+        elif customer_type == 'project':
+        # For project type customers
+          project_geopoint = get_object_or_404(DeviceGeoPoint, device_id=device.id)
+          project_geopoint.device_movement = device_movement
+          project_geopoint.save()
+        
+        # Create a new DeviceStatus object
+        device_status_obj = DeviceStatus.objects.create(
+            device_id=device_id,
+            battery_status=battery_status,
+            device_status=device_status,
+            device_log=device_log,
+            device_lat=device_lat,
+            device_gforce=device_gforce,
+            device_movement=device_movement,
+        )
+        
+        # Return a success response
+        return JsonResponse({"detail": f"Device status created for device {device_id} and movement updated."}, status=201)
+    
+    except ValueError:
+        # Return an error response for invalid parameter values
+        return JsonResponse({"error": "Invalid parameter values"}, status=400)
 

@@ -44,6 +44,7 @@ admin.site.register(DeviceGeoPoint)
 admin.site.register(Property)
 admin.site.register(PropertyGeolocation)
 admin.site.register(PropertyDeviceGeoPoint)
+admin.site.register(DeviceStatus)
 
 
 #admin.site.unregister(Taluk)
