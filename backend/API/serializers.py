@@ -2,9 +2,42 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
-from .models import Device,District,Taluk,Village,Customer,PropertyRegistration,Geolocation,PropertyDevice,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint
+from .models import Device,District,Taluk,Village,Customer,PropertyRegistration,Geolocation,PropertyDevice,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser
 User = get_user_model()  # Get the actual User model
 
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)  # Add write-only password field
+    
+    class Meta:
+        model = CustomUser
+        fields = ['id','username', 'email', 'mobile_number', 'address', 'status', 'customer_type', 'customer_role', 'password', 'created_by']
+    
+    def create(self, validated_data):
+        # Pop the password from validated_data and create the user instance
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        
+        # Set the password and save user
+        if password:
+            user.set_password(password)
+            user.save()
+        
+        return user
+
+    def update(self, instance, validated_data):
+        # Handle password update if provided
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        
+        if password:
+            user.set_password(password)
+            user.save()
+        
+        return user
+
+        
 class DeviceSerializer(serializers.ModelSerializer):
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), 

@@ -35,99 +35,117 @@ const Sidebar = ({ children }) => {
   };
 
   // Define menu items conditionally based on customer_type
-  const menuItem = [
-    {
-      id: 1,
-      path: '/dashboard',
-      name: 'Dashboard ',
-      icon: <img src={imgPath.dashboard} alt="documents" />,
-    },
-    {
-      id: 2,
-      path: '/',
-      name: 'Master',
-      icon: <img src={imgPath.master} alt="master" />,
-      subMenu: [
-        {
-          sub_id: 1,
-          path: '/master/devices',
-          name: 'Devices',
-        },
-        // Conditionally include additional items for non-project customer types
-        ...(customer_type === 'property'
-          ? [
-              {
-                sub_id: 2,
-                path: '/master/district',
-                name: 'District',
-              },
-              {
-                sub_id: 3,
-                path: '/master/taluk',
-                name: 'Taluk',
-              },
-              {
-                sub_id: 4,
-                path: '/master/village',
-                name: 'Village',
-              },
-            ]
-          : []),
-      ],
-    },
-    {
-      id: 3,
-      path: '/customers',
-      name: `Customers ${customer_role}`,
-      icon: <img src={imgPath.customers} alt="documents" />,
-    },
-    ...(customer_type === 'property'
-      ? [
+  
+  const menuItem = customer_role === 'manager'
+  ? [
+      ...(customer_type === 'property'
+        ? [
           {
-            id: 5,
-            path: '/properties',
-            name: 'Property ',
-            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            id: 1,
+            path: '/dashboard',
+            name: 'Dashboard',
+            icon: <img src={imgPath.dashboard} alt="dashboard" />,
           },
-         
+            {
+              id: 8,
+              path: '/property-geolocation',
+              name: 'Property Geolocation',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+            {
+              id: 10,
+              path: '/device-property-geopoint',
+              name: 'Device Geopoint',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+          ]
+        : []),
+      ...(customer_type === 'project'
+        ? [
           {
-            id: 8,
-            path: '/property-geolocation',
-            name: 'Property Geolocation',
-            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            id: 1,
+            path: '/dashboard',
+            name: 'Dashboard',
+            icon: <img src={imgPath.dashboard} alt="dashboard" />,
           },
-          {
-            id: 10,
-            path: '/device-property-geopoint',
-            name: 'Device Geopoint',
-            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
-          },
-        
-        ]
-      : []),
-    ...(customer_type === 'project'
-      ? [
-          {
-            id: 9,
-            path: '/project-registration',
-            name: 'Project ',
-            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
-          },
-          {
-            id: 10,
-            path: '/project-geolocation',
-            name: 'Project Geolocation',
-            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
-          },
-          {
-            id: 11,
-            path: '/device-geopoint',
-            name: 'Device Geopoint',
-            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
-          },
-        ]
-      : []),
-  ];
+            {
+              id: 10,
+              path: '/project-geolocation',
+              name: 'Project Geolocation',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+            {
+              id: 11,
+              path: '/device-geopoint',
+              name: 'Device Geopoint',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+          ]
+        : []),
+    ]
+  : [
+      // Other menu items for non-manager roles
+      {
+        id: 1,
+        path: '/dashboard',
+        name: 'Dashboard',
+        icon: <img src={imgPath.dashboard} alt="dashboard" />,
+      },
+      {
+        id: 2,
+        path: '/customers',
+        name: 'Customers',
+        icon: <img src={imgPath.customers} alt="customers" />,
+      },
+      ...(customer_type === 'property'
+        ? [
+            {
+              id: 5,
+              path: '/properties',
+              name: 'Property ',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+           
+            {
+              id: 8,
+              path: '/property-geolocation',
+              name: 'Property Geolocation',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+            {
+              id: 10,
+              path: '/device-property-geopoint',
+              name: 'Device Geopoint',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+          
+          ]
+        : []),
+      ...(customer_type === 'project'
+        ? [
+            {
+              id: 9,
+              path: '/project-registration',
+              name: 'Project ',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+            {
+              id: 10,
+              path: '/project-geolocation',
+              name: 'Project Geolocation',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+            {
+              id: 11,
+              path: '/device-geopoint',
+              name: 'Device Geopoint',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+          ]
+        : []),
+      // Other menu items as needed
+    ];
+
 
   const renderSubMenu = (item) => (
     <div key={item.id} className="submenu">

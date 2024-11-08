@@ -63,7 +63,7 @@ const ProjectDeviceManagement = () => {
                         latitude: location.latitude,
                         longitude: location.longitude,
                         geolocation: location.id, // Store location ID here
-                        device: "",
+                        device: location.device_id,
                     })));
                 } catch (error) {
                     console.error("Error fetching geo locations:", error);

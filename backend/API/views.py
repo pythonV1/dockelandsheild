@@ -7,14 +7,44 @@ from rest_framework.decorators import parser_classes
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets
+from django.db.models import F
 from django.contrib.auth import authenticate
-from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint
-from .serializers import DeviceSerializer,DistrictSerializer,TalukSerializer,VillageSerializer,CustomerSerializer,PropertyRegistrationSerializer,GeolocationSerializer,PropertyDeviceSerializer,PropertyDeviceDeviceSerializer,ProjectSerializer,ProjectGeolocationSerializer,DeviceGeoPointSerializer,PropertySerializer,PropertyGeolocationSerializer,PropertyDeviceGeoPointSerializer
+from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser
+from .serializers import DeviceSerializer,DistrictSerializer,TalukSerializer,VillageSerializer,CustomerSerializer,PropertyRegistrationSerializer,GeolocationSerializer,PropertyDeviceSerializer,PropertyDeviceDeviceSerializer,ProjectSerializer,ProjectGeolocationSerializer,DeviceGeoPointSerializer,PropertySerializer,PropertyGeolocationSerializer,PropertyDeviceGeoPointSerializer,CustomUserSerializer
 import json
 from json.decoder import JSONDecodeError
 
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])  # Ensure only authenticated users can create customers
+def add_customer(request):
+    # Set the `created_by` field to the current logged-in user
+    request.data['created_by'] = request.user.id
+    request.data['customer_role'] ='manager'
+    # Initialize the serializer with request data
+    serializer = CustomUserSerializer(data=request.data)
+    
+    # Validate and save the data if valid
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    # Return validation errors if data is not valid
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def customers_list_by_customer(request, user_id):
+    if request.method == 'GET':
+        # Filter customers where `created_by` matches the provided `user_id`
+        customers = CustomUser.objects.filter(created_by_id=user_id)
+        serializer = CustomUserSerializer(customers, many=True)
+        return Response(serializer.data)
+    
 @api_view(['GET'])
 def devices_list(request):
     devices = Device.objects.all()
@@ -30,6 +60,7 @@ def devices_list(request):
         }
         data.append(device_data)
     return Response(data)
+
 
 
 def check_duplicate_device_id(request):
@@ -207,13 +238,7 @@ def customers_list(request):
         serializer = CustomerSerializer(customers, many=True)
         return Response(serializer.data)
 
-@api_view(['POST'])
-def add_customer(request):
-    serializer = CustomerSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['PUT', 'PATCH'])
 def update_customer(request, pk):
@@ -462,10 +487,19 @@ def create_device_geo_points222(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def project_geolocation_list_byid(request,project_id):
+def project_geolocation_list_byid444444444(request,project_id):
     
     if request.method == 'GET':
         geolocations = ProjectGeolocation.objects.filter(project__project_id=project_id).values('id','latitude', 'longitude', 'refference_name')
+        return JsonResponse(list(geolocations), safe=False)
+@api_view(['GET'])
+
+def project_geolocation_list_byid(request,project_id):
+    
+    if request.method == 'GET':
+        geolocations = ProjectGeolocation.objects.filter(project__project_id=project_id).annotate(
+            device_id=F('devicegeopoint__device__id')  # Fetch the device_id if linked
+        ).values('id','latitude', 'longitude', 'refference_name', 'device_id')
         return JsonResponse(list(geolocations), safe=False)
 
 
@@ -939,12 +973,22 @@ def property_list_by_customer(request, customer_id):
         )
         
 @api_view(['GET'])
-def property_geolocation_list_byid(request,property_id):
+def property_geolocation_list_byid123(request,property_id):
     
     if request.method == 'GET':
         geolocations = PropertyGeolocation.objects.filter(property__property_id=property_id).values('id','latitude', 'longitude', 'refference_name')
         return JsonResponse(list(geolocations), safe=False)
     
+@api_view(['GET'])
+def property_geolocation_list_byid(request, property_id):
+    if request.method == 'GET':
+        # Fetch geolocation data and associated device_id (if any)
+        geolocations = PropertyGeolocation.objects.filter(property__property_id=property_id).annotate(
+            device_id=F('propertydevicegeopoint__device__id')  # Fetch the device_id if linked
+        ).values('id', 'latitude', 'longitude', 'refference_name', 'device_id')
+
+        return JsonResponse(list(geolocations), safe=False)
+      
 @api_view(['POST'])
 def create_device_property_geo_points(request):
     # Check if the request data is a list
@@ -1453,7 +1497,9 @@ class LoginAPI(APIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
-            return Response({'message': 'Login successful', 'token': token,'customerName':user.first_name,'id': user.id,'address':user.last_name,'customer_type':user.customer_type,'customer_role':user.customer_role}, status=status.HTTP_200_OK)
+            created_by = user.created_by.username if user.created_by else None
+            created_by_id = user.created_by.id if user.created_by else None
+            return Response({'message': 'Login successful', 'token': token,'customerName':user.first_name,'id': user.id,'address':user.last_name,'customer_type':user.customer_type,'customer_role':user.customer_role,'created_by_id':created_by_id}, status=status.HTTP_200_OK)
         else:
             # Invalid credentials
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)

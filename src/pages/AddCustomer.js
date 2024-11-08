@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import {
   Button,
   Card,
@@ -13,22 +13,29 @@ import PageTitle from '../components/PageTitle';
 import PageHelmet from '../components/PageHelmet';
 import axios from 'axios';
 import API_BASE_URL from '../config';
-import withAuthRedirect from '../hoc/withAuthRedirect'; // Import the HOC
-const AddCustomer = () => {
+import withAuthRedirect from '../hoc/withAuthRedirect';
+
+const AddCustomer = ({ currentUser }) => {
   const [customerID, setCustomerID] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [email_id, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [aadharNumber, setAadharNumber] = useState('');
   const [address, setAddress] = useState('');
+  const [password, setPassword] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
   const { customer } = location.state || {};
+  const token = localStorage.getItem('token');
+  const customer_type = localStorage.getItem('customer_type');
+  const customer_id = localStorage.getItem('id');
+  
+  console.log("Token from localStorage:", token); // Check if this prints the token correctly
 
   useEffect(() => {
     if (customer) {
-      setCustomerID(customer.customer_id);
+      setCustomerID(customer.id);
       setCustomerName(customer.name);
       setEmail(customer.email);
       setMobileNumber(customer.mobile_number);
@@ -36,32 +43,34 @@ const AddCustomer = () => {
       setAddress(customer.address);
     }
   }, [customer]);
+
   const handleInputChange = (e, fieldName) => {
-    // Update the state based on the field name
+    const value = e.target.value;
     switch (fieldName) {
       case 'customerName':
-        setCustomerName(e.target.value);
+        setCustomerName(value);
         break;
       case 'email_id':
-        setEmail(e.target.value);
+        setEmail(value);
         break;
       case 'mobileNumber':
-        setMobileNumber(e.target.value);
+        setMobileNumber(value);
         break;
       case 'aadharNumber':
-        setAadharNumber(e.target.value);
+        setAadharNumber(value);
         break;
       case 'address':
-        setAddress(e.target.value);
+        setAddress(value);
         break;
-
-      // Add cases for other fields if needed
+      case 'password':
+        setPassword(value);
+        break;
       default:
         break;
     }
-    // Clear the form error for the corresponding field
     clearFormError(fieldName);
   };
+
   const clearFormError = (fieldName) => {
     setFormErrors((prevErrors) => {
       return { ...prevErrors, [fieldName]: '' };
@@ -70,61 +79,96 @@ const AddCustomer = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const errors = {};
-
-    if (!customerName) {
-      errors.customerName = 'Customer Name is required';
-    }
-    if (!email_id) {
-      errors.email_id = 'Email is required';
-    }
-    if (!mobileNumber) {
-      errors.mobileNumber = 'Mobile Number is required';
-    }
-    if (!aadharNumber) {
-      errors.aadharNumber = 'Aadhar Number  is required';
-    }
-    if (!address) {
-      errors.address = 'Address  is required';
-    }
+  
+    if (!customerName) errors.customerName = 'Customer Name is required';
+    if (!email_id) errors.email_id = 'Email is required';
+    if (!mobileNumber) errors.mobileNumber = 'Mobile Number is required';
+    if (!aadharNumber) errors.aadharNumber = 'Aadhar Number is required';
+    if (!address) errors.address = 'Address is required';
+    if (!password) errors.password = 'Password is required';
+  
     setFormErrors(errors);
-    // If there are errors, stop form submission
-    if (Object.keys(errors).length !== 0) {
-      return;
-    }
+    if (Object.keys(errors).length !== 0) return;
+  
     try {
-      if (!customerName) {
-        throw new Error('Please fill in all required fields.');
-      }
-
+      
+  
+      const data = {
+        name: customerName,
+        username: customerName,
+        email: email_id,
+        mobile_number: mobileNumber,
+        aadhar_number: aadharNumber,
+        address: address,
+        password: password,
+        customer_type:customer_type,
+        created_by: customer_id, // Set the current logged-in user's ID
+      };
+  
+      // Include the token in the request headers
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+  
       if (customer) {
-        await axios.put(
-          `${API_BASE_URL}/customer/update/${customer.customer_id}/`,
-          {
-            customer_id: customerID,
-            name: customerName,
-            email: email_id,
-            mobile_number: mobileNumber,
-            aadhar_number: aadharNumber,
-            address: address,
-          }
-        );
+        // Update customer
+        await axios.put(`${API_BASE_URL}/customer/update/${customer.id}/`, data, { headers });
       } else {
-        await axios.post(`${API_BASE_URL}/customer/add/`, {
-          // id: districtID,
-          name: customerName,
-          email: email_id,
-          mobile_number: mobileNumber,
-          aadhar_number: aadharNumber,
-          address: address,
-        });
-        // setStatusMessage('Device added successfully');
+        // Add new customer
+        await axios.post(`${API_BASE_URL}/customer/add/`, data, { headers });
       }
+  
       navigate('/customers');
     } catch (error) {
       console.error('Error adding/updating customer:', error.message);
-      // alert(error.message);
     }
   };
+  
+  const handleSubmit333333 = async (event) => {
+    event.preventDefault();
+    const errors = {};
+
+    if (!customerName) errors.customerName = 'Customer Name is required';
+    if (!email_id) errors.email_id = 'Email is required';
+    if (!mobileNumber) errors.mobileNumber = 'Mobile Number is required';
+    if (!aadharNumber) errors.aadharNumber = 'Aadhar Number is required';
+    if (!address) errors.address = 'Address is required';
+    if (!password) errors.password = 'Password is required';
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length !== 0) return;
+
+    try {
+      const token = localStorage.getItem('token'); // Get the token from localStorage
+
+      const headers = {
+        Authorization: `Bearer ${token}`, // Include token in the request header
+      };
+
+      const data = {
+        name: customerName,
+        email: email_id,
+        mobile_number: mobileNumber,
+        aadhar_number: aadharNumber,
+        address: address,
+        password: password,
+        created_by: currentUser?.id, // Set the current logged-in user's ID
+      };
+
+      if (customer) {
+        // Update customer if the customer exists
+        await axios.put(`${API_BASE_URL}/customer/update/${customer.customer_id}/`, data, { headers });
+      } else {
+        // Add new customer
+        await axios.post(`${API_BASE_URL}/customer/add/`, data, { headers });
+      }
+
+      navigate('/customers');
+    } catch (error) {
+      console.error('Error adding/updating customer:', error.message);
+    }
+  };
+
   return (
     <Container fluid className="section">
       <PageHelmet />
@@ -194,6 +238,36 @@ const AddCustomer = () => {
                       />
                       <Form.Control.Feedback type="invalid">
                         {formErrors.aadharNumber}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col lg={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => handleInputChange(e, 'password')}
+                        isInvalid={!!formErrors.password}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.password}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col lg={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Confirm Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        placeholder="Confirm Password"
+                        value={password}
+                        onChange={(e) => handleInputChange(e, 'confirm_password')}
+                        isInvalid={!!formErrors.password}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.confirm_password}
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>

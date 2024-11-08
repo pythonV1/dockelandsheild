@@ -15,11 +15,12 @@ const Customers = () => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for showing/hiding modal
   const [deleteIndex, setDeleteIndex] = useState(null); // State to store index of item to delete
   const navigate = useNavigate();
+  const customer_id = localStorage.getItem('id');
   useEffect(() => {
     // Function to fetch customer data from the API
     const fetchCustomers = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/customers/`); // Make GET request to the API
+        const response = await axios.get(`${API_BASE_URL}/customers/added-by/${customer_id}/`); // Make GET request to the API
         //console.log('hello', response.data);
         setCustomers(response.data); // Update state with fetched customer data
       } catch (error) {
@@ -76,39 +77,13 @@ const Customers = () => {
   };
 
   const headers = [
-    'Customer ID',
     'Name',
     'Email',
     'Mobile Number',
     'Address',
     'Aadhar Number',
   ];
-  const rows = [
-    [
-      '7809',
-      'Ram',
-      'ram123@gmailcom',
-      '9876543210',
-      '48, Periyar nagar, Chengalpattu',
-      '980723146754',
-    ],
-    [
-      '8234',
-      'Selva',
-      'selva@gmailcom',
-      '7891209345',
-      '2A, karupasamy street, Madurai',
-      '980723146754',
-    ],
-    [
-      '3982',
-      'Karthick',
-      'karthick123@gmailcom',
-      '9876543210',
-      '21/4, Mahalingam street, Ramanathapuram',
-      '980723146754',
-    ],
-  ];
+
 
   return (
     <Container fluid className="section">
@@ -143,8 +118,8 @@ const Customers = () => {
               <CommonTable
                 headers={headers}
                 rows={customers.map((customer) => [
-                  customer.customer_id,
-                  customer.name,
+             
+                  customer.username,
                   customer.email,
                   customer.mobile_number,
                   customer.address,

@@ -9,7 +9,7 @@ from .views import (
     project_geolocation_list,
     add_property_registration, property_registrations_list, update_property_registration, delete_property_registration,
     add_property_device, property_device_list, update_property_device, delete_property_device,
-    geolocations_by_propertyregistrations, survey_details_api,project_list_by_customer,add_project_geolocation,delete_project_geolocation,update_project_geolocation,device_geopoint_list,add_device_geopoint,project_geolocation_list_byid,create_device_geo_points,device_geopoint_list_by_customer,add_property,property_list,update_property,delete_property,properties_by_customer,add_property_geolocation,delete_property_geolocation,update_property_geolocation,property_geolocation_list,device_property_geopoint_list_by_customer,property_list_by_customer,property_geolocation_list_byid,create_device_property_geo_points,propertygeolocation_by_customer,devices_list_by_customer,property_survey_details_api,project_survey_details_api,check_duplicate_device_id,dashboard_data_by_customer
+    geolocations_by_propertyregistrations, survey_details_api,project_list_by_customer,add_project_geolocation,delete_project_geolocation,update_project_geolocation,device_geopoint_list,add_device_geopoint,project_geolocation_list_byid,create_device_geo_points,device_geopoint_list_by_customer,add_property,property_list,update_property,delete_property,properties_by_customer,add_property_geolocation,delete_property_geolocation,update_property_geolocation,property_geolocation_list,device_property_geopoint_list_by_customer,property_list_by_customer,property_geolocation_list_byid,create_device_property_geo_points,propertygeolocation_by_customer,devices_list_by_customer,property_survey_details_api,project_survey_details_api,check_duplicate_device_id,dashboard_data_by_customer,customers_list_by_customer
 )
 
 urlpatterns = [
@@ -47,8 +47,8 @@ urlpatterns = [
     path('village/delete/<int:pk>/', delete_village, name='delete-village'),
 
     # Customer Management
-    path('customer/add/', add_customer, name='add-customer'),
-    path('customers/', customers_list, name='customers-list'),
+    #path('customer/add/', add_customer, name='add-customer'),
+    #path('customers/', customers_list, name='customers-list'),
     path('customer/update/<int:pk>/', update_customer, name='update-customer'),
     path('customer/delete/<int:pk>/', delete_customer, name='delete-customer'),
 
@@ -118,6 +118,8 @@ urlpatterns = [
     
     path('geolocations/customer/<int:customer_id>/', device_geopoint_list_by_customer, name='device_geopoint_list_by_customer'),
     
+    path('customers/added-by/<int:user_id>/', customers_list_by_customer, name='customers-list-by-customer'),
+    path('customer/add/', add_customer, name='add-customer'),
     
    
 ]

@@ -1,7 +1,12 @@
-from django.contrib.auth.models import AbstractUser, Group, Permission,User
+from django.contrib.auth.models import AbstractUser, Group, Permission, User
 from django.db import models
 from django.conf import settings
+
+
 class CustomUser(AbstractUser):
+    class Meta:
+        db_table = 'api_customuser'  # Explicitly set the table name (lowercase)
+    
     groups = models.ManyToManyField(
         Group,
         related_name="customuser_set",  # Set a unique related_name to avoid conflicts
@@ -14,6 +19,7 @@ class CustomUser(AbstractUser):
     )
     mobile_number = models.CharField(max_length=15)
     address = models.TextField()
+
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('inactive', 'Inactive'),
@@ -26,7 +32,6 @@ class CustomUser(AbstractUser):
     ]
     customer_type = models.CharField(max_length=10, choices=CUSTOMER_TYPE_CHOICES)
     
-
     CUSTOMER_ROLE_CHOICES = [
         ('django', 'Django Admin'),
         ('super', 'Super'),
@@ -34,11 +39,13 @@ class CustomUser(AbstractUser):
     ]
     customer_role = models.CharField(max_length=10, choices=CUSTOMER_ROLE_CHOICES)
 
-    STATUS_CHOICES = [
-        ('active', 'Active'),
-        ('inactive', 'Inactive')
-    ]
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Reference the user model
+        on_delete=models.SET_NULL,  # Set to NULL if the creator is deleted
+        null=True,
+        blank=True,
+        related_name='created_customers'
+    )
 
     def __str__(self):
         return self.username
@@ -68,11 +75,9 @@ class Project(models.Model):
     project_city = models.CharField(max_length=100)
     project_descriptions = models.CharField(max_length=100)
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='projects')
-  
 
 
 class ProjectGeolocation(models.Model):
-    #project_id = models.ForeignKey(Project, related_name='project_locations', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, to_field='project_id')
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -91,15 +96,13 @@ class DeviceGeoPoint(models.Model):
     def __str__(self):
         return f"Location for {self.project.project_name}"
 
-
-
 class DeviceGeoPointworkingold(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, to_field='project_id')
     device = models.ForeignKey(Device, on_delete=models.CASCADE, null=True, blank=True)
     geolocation = models.ForeignKey(ProjectGeolocation, on_delete=models.CASCADE)
     device_movement = models.IntegerField(default=0)
-    last_updated = models.DateField(auto_now=True)  # Add this line
-    # Add other fields as needed
+    last_updated = models.DateField(auto_now=True)
+
     def __str__(self):
         return f"Location for {self.project.project_name}"
    
@@ -115,8 +118,6 @@ class DeviceStatus(models.Model):
 class District(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    #area = models.FloatField()  # Assuming area is in square kilometers
-    #population_density = models.FloatField()  # Calculated field (population / area)
 
     def __str__(self):
         return self.name
@@ -127,7 +128,6 @@ class Taluk(models.Model):
 
     def __str__(self):
         return self.name
-    
     
 class Village(models.Model):
     name = models.CharField(max_length=100)
@@ -142,7 +142,6 @@ class Village(models.Model):
 class Property(models.Model):
     property_id = models.AutoField(primary_key=True)
     property_name = models.CharField(max_length=100)
-    #state feild
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     village = models.ForeignKey(Village, on_delete=models.CASCADE)
     taluk = models.ForeignKey(Taluk, on_delete=models.CASCADE)
@@ -155,7 +154,6 @@ class Property(models.Model):
   
    
 class PropertyGeolocation(models.Model):
-    #project_id = models.ForeignKey(Project, related_name='project_locations', on_delete=models.CASCADE)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, to_field='property_id')
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -164,23 +162,19 @@ class PropertyGeolocation(models.Model):
     def __str__(self):
         return f"Location for {self.property.property_name}" 
     
+
 class PropertyDeviceGeoPoint(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, to_field='property_id')
     device = models.OneToOneField(Device, on_delete=models.CASCADE, null=True, blank=True)  # Use OneToOneField instead of ForeignKey
     geolocation = models.ForeignKey(PropertyGeolocation, on_delete=models.CASCADE)
     device_movement = models.IntegerField(default=0)
     last_updated = models.DateField(auto_now=True)
-    
+
     def __str__(self):
         return f"Location for {self.property.property_name}"
     
     
 ############### Property end
-
-
-
-
-
 
 
 
@@ -208,6 +202,7 @@ class PropertyRegistration(models.Model):
     patta_number = models.CharField(max_length=100)
     area = models.CharField(max_length=100)
     fmb = models.FileField(upload_to='fmb_pdfs')
+
     def save(self, *args, **kwargs):
         if not self.property_id:
             last_property = PropertyRegistration.objects.order_by('-id').first()
@@ -215,7 +210,6 @@ class PropertyRegistration(models.Model):
                 last_property_id = int(last_property.property_id)
                 self.property_id = str(last_property_id + 1000)
             else:
-                # If no PropertyRegistration exists, start from 1000
                 self.property_id = '1000'
 
         super(PropertyRegistration, self).save(*args, **kwargs)
@@ -238,14 +232,12 @@ class PropertyDevice(models.Model):
     devices = models.ManyToManyField(Device, through='PropertyDeviceDevice')
     updated = models.DateField(auto_now=True)  # Add this line
     last_updated = models.DateField(auto_now=True)  # Add this line
-
+    
 class PropertyDeviceDevice(models.Model):
     property_device = models.ForeignKey(PropertyDevice, on_delete=models.CASCADE)
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
-    geolocation = models.ForeignKey(Geolocation, on_delete=models.CASCADE)
-    device_movement = models.IntegerField(default=0)
-    last_updated = models.DateField(auto_now=True)  # Add this line
-    # Add other fields as needed
+    device_state = models.CharField(max_length=100)
+    device_location = models.ForeignKey(PropertyGeolocation, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.property_device} - {self.device}"
+    class Meta:
+        db_table = 'api_propertydevicedevice'  # Set the lowercase table name
