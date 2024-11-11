@@ -41,16 +41,16 @@ services:
     command: --lower_case_table_names=1
     networks:
       - mynetwork
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    environment:
-      PMA_HOST: database  # Refers to the MySQL service name
-      PMA_USER: myuser    # Your MySQL username
-      PMA_PASSWORD: mypassword  # Your MySQL password
-    ports:
-      - "8080:80"
-    networks:
-    - mynetwork
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   environment:
+  #     PMA_HOST: database  # Refers to the MySQL service name
+  #     PMA_USER: myuser    # Your MySQL username
+  #     PMA_PASSWORD: mypassword  # Your MySQL password
+  #   ports:
+  #     - "8080:80"
+  #   networks:
+  #   - mynetwork
 
 networks:
   mynetwork:
