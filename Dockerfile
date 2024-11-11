@@ -2,14 +2,14 @@
 FROM node:18
 
 # Set the working directory
-#WORKDIR /app
+WORKDIR /app
 
 # Copy the package.json and install dependencies
 #COPY package.json /app/
 #RUN npm install
 
 # Copy the rest of the app's source code
-#COPY . /app/
+COPY . /app/
 
 # Build the React app for production
 RUN npm run build
