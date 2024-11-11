@@ -1,5 +1,5 @@
 # Use the official Node.js image
-FROM node:18
+#FROM node:18
 
 # Set the working directory
 #WORKDIR /app
@@ -9,7 +9,7 @@ FROM node:18
 #RUN npm install
 
 # Copy the rest of the app's source code
-COPY . /app/
+#COPY . /app/
 
 # Build the React app for production
 #RUN npm run build
