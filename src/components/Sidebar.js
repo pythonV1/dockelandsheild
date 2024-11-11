@@ -93,6 +93,40 @@ const Sidebar = ({ children }) => {
       },
       {
         id: 2,
+        path: '/',
+        name: 'Master',
+        icon: <img src={imgPath.master} alt="master" />,
+        subMenu: [
+          {
+            sub_id: 1,
+            path: '/master/devices',
+            name: 'Devices',
+          },
+         
+          // Hide Taluk and Village if the user is a manager
+          ...(customer_type !== 'project'
+            ? [
+              {
+                sub_id: 2,
+                path: '/master/district',
+                name: 'District',
+              },
+                {
+                  sub_id: 3,
+                  path: '/master/taluk',
+                  name: 'Taluk',
+                },
+                {
+                  sub_id: 4,
+                  path: '/master/village',
+                  name: 'Village',
+                },
+              ]
+            : []),
+        ],
+      },
+      {
+        id: 2,
         path: '/customers',
         name: 'Customers',
         icon: <img src={imgPath.customers} alt="customers" />,
