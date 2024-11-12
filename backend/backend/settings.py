@@ -170,7 +170,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Your frontend origin
+    'http://localhost:3000', 'http://ec2-13-202-221-203.ap-south-1.compute.amazonaws.com:3000' # Your frontend origin
     # Add more origins as needed
 ]
 

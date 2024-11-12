@@ -27,6 +27,7 @@ services:
       - DJANGO_DB_HOST=database
     depends_on:
       - database
+    command: python manage.py runserver 0.0.0.0:8000
 
   database:
     image: mysql:8
@@ -37,20 +38,11 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./custom-my.cnf:/etc/mysql/conf.d/my.cnf  # Mount custom MySQL config file
+      - ./landshield.sql:/docker-entrypoint-initdb.d/landshield.sql  # Mount the SQL file for initialization
+      - ./custom-my.cnf:/etc/mysql/conf.d/my.cnf  # Optional: Custom MySQL config
     command: --lower_case_table_names=1
     networks:
       - mynetwork
-  # phpmyadmin:
-  #   image: phpmyadmin/phpmyadmin
-  #   environment:
-  #     PMA_HOST: database  # Refers to the MySQL service name
-  #     PMA_USER: myuser    # Your MySQL username
-  #     PMA_PASSWORD: mypassword  # Your MySQL password
-  #   ports:
-  #     - "8080:80"
-  #   networks:
-  #   - mynetwork
 
 networks:
   mynetwork:
@@ -58,4 +50,3 @@ networks:
 
 volumes:
   mysql_data:
-
