@@ -10,6 +10,8 @@ services:
     environment:
       - NODE_ENV=production
       - DANGEROUSLY_DISABLE_HOST_CHECK=true
+      - HOST=0.0.0.0
+      
     volumes:
       - .:/app
     networks:
