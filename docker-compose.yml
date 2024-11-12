@@ -38,7 +38,7 @@ services:
       MYSQL_ROOT_PASSWORD: rootpassword
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./landshield.sql:/docker-entrypoint-initdb.d/landshield.sql  # Mount the SQL file for initialization
+     # - ./landshield.sql:/docker-entrypoint-initdb.d/landshield.sql  # Mount the SQL file for initialization
       - ./custom-my.cnf:/etc/mysql/conf.d/my.cnf  # Optional: Custom MySQL config
     command: --lower_case_table_names=1
     networks:
