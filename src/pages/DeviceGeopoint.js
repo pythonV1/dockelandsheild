@@ -36,7 +36,7 @@ const DeviceGeoPointPage = () => {
   }, []);
 
   const headers = [
-    'Project Name',
+    'Pipeline Name',
     'Device ID',
     'Latitude',
     'Longitude',
@@ -46,8 +46,8 @@ const DeviceGeoPointPage = () => {
 
   const rows = deviceGeoPoints.map((deviceGeoPoint) => [
     
-    <Link key={deviceGeoPoint.project_id} to={`/project/survey-details/${deviceGeoPoint.project_id}`}
-    >{deviceGeoPoint.project_name}</Link>,
+    <Link key={deviceGeoPoint.pipeline_id} to={`/pipeline/survey-details/${deviceGeoPoint.pipeline_id}`}
+    >{deviceGeoPoint.pipeline_name}</Link>,
     deviceGeoPoint.device_id,
     deviceGeoPoint.latitude,
     deviceGeoPoint.longitude,

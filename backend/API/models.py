@@ -58,15 +58,6 @@ class DeviceType(models.Model):
     def __str__(self):
         return self.name
     
-class Device(models.Model):
-    device_id = models.CharField(max_length=100, unique=True)  # Make device_id unique
-    device_type = models.ForeignKey(DeviceType, on_delete=models.CASCADE)  # ForeignKey to DeviceType model
-    battery_status = models.CharField(max_length=100, default='')
-    device_status = models.BooleanField(default=False)  # BooleanField
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='device')
-    
-    def __str__(self):
-        return f"{self.device_id} - {self.device_type.name}"
 
 class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
@@ -76,18 +67,53 @@ class Project(models.Model):
     project_descriptions = models.CharField(max_length=100)
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='projects')
 
+class Projectpipeline(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, to_field='project_id')
+    pipeline_id = models.AutoField(primary_key=True)
+    pipeline_name = models.CharField(max_length=100)
+    #pipline_state = models.CharField(max_length=100)
+    #pipline_city = models.CharField(max_length=100)
+    pipeline_descriptions = models.CharField(max_length=100)
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='projectpipelines_as_customer')
+    users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        blank=True, 
+        related_name='projectpipelines_as_user'
+    )  # 
+    
+    def __str__(self):
+        return f"{self.pipeline_name}"
+    
+class Device(models.Model):
+    device_id = models.CharField(max_length=100, unique=True)  # Make device_id unique
+    Projectpipeline = models.ForeignKey(
+        Projectpipeline, 
+        on_delete=models.CASCADE, 
+        to_field='pipeline_id',
+        null=True,        # Allow NULL values in the database
+        blank=True        # Allow the field to be optional in forms
+    )
+    device_type = models.ForeignKey(DeviceType, on_delete=models.CASCADE)  # ForeignKey to DeviceType model
+    battery_status = models.CharField(max_length=100, default='')
+    device_status = models.BooleanField(default=False)  # BooleanField
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='device')
+    
+    def __str__(self):
+        return f"{self.device_id} - {self.device_type.name}"
+
+
 
 class ProjectGeolocation(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, to_field='project_id')
+    projectpipeline = models.ForeignKey(Projectpipeline, on_delete=models.CASCADE, to_field='pipeline_id', default=1)
     latitude = models.FloatField()
     longitude = models.FloatField()
     refference_name = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"Location for {self.project.project_name}"
+        return f"Location for {self.Projectpipeline.pipeline_name}"
     
 class DeviceGeoPoint(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, to_field='project_id')
+    projectpipeline = models.ForeignKey(Projectpipeline, on_delete=models.CASCADE, to_field='pipeline_id', default=1, null=True, blank=True)
     device = models.OneToOneField(Device, on_delete=models.CASCADE, null=True, blank=True)  # Use OneToOneField instead of ForeignKey
     geolocation = models.ForeignKey(ProjectGeolocation, on_delete=models.CASCADE)
     device_movement = models.IntegerField(default=0)
@@ -235,9 +261,9 @@ class PropertyDevice(models.Model):
     
 class PropertyDeviceDevice(models.Model):
     property_device = models.ForeignKey(PropertyDevice, on_delete=models.CASCADE)
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
-    device_state = models.CharField(max_length=100)
-    device_location = models.ForeignKey(PropertyGeolocation, on_delete=models.CASCADE)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, default=1)
+    device_state = models.CharField(max_length=100,default='1')
+    device_location = models.ForeignKey(PropertyGeolocation, on_delete=models.CASCADE, default=1)
 
     class Meta:
         db_table = 'api_propertydevicedevice'  # Set the lowercase table name

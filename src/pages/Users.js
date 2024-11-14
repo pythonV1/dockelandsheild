@@ -39,7 +39,7 @@ const Customers = () => {
     const customer = customers[rowIndex];
     console.log(customer);
     // Navigate to the AddDevice component with the customer data
-    navigate('/customers/add-customer', { state: { customer } });
+    navigate('/users/add-user', { state: { customer } });
   };
   const handleDelete = async (id) => {
     if (!customers || id < 0 || id >= customers.length) {
@@ -66,7 +66,7 @@ const Customers = () => {
         return updatedCustomers;
       });
       // Set status message
-      setStatusMessage('Customer deleted successfully');
+      setStatusMessage('User deleted successfully');
     } catch (error) {
       console.error('Error deleting Customer:', error);
     } finally {
@@ -97,9 +97,9 @@ const Customers = () => {
             <PageTitle />
           </div>
           <AddButton
-            buttonText={'Add Customer'}
+            buttonText={'Add User'}
             setStatusMessage={setStatusMessage}
-            path="/customers/add-customer"
+            path="/users/add-user"
           />
         </Col>
         <Col lg={12}>

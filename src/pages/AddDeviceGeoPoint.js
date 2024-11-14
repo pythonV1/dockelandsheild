@@ -18,9 +18,9 @@ import PageTitle from '../components/PageTitle';
 import withAuthRedirect from '../hoc/withAuthRedirect';
 
 const ProjectDeviceManagement = () => {
-    const [projects, setProjects] = useState([]);
+    const [pipelines, setPipelines] = useState([]);
     const [devices, setDevices] = useState([]);
-    const [selectedProject, setSelectedProject] = useState("");
+    const [selectedPipeline, setSelectedPipeline] = useState("");
     const [geoLocations, setGeoLocations] = useState([]);
     const [propertyDeviceList, setPropertyDeviceList] = useState([]);
     const [formErrors, setFormErrors] = useState({});
@@ -29,15 +29,15 @@ const ProjectDeviceManagement = () => {
     const customer_id = localStorage.getItem('id');
 
     useEffect(() => {
-        const fetchProjects = async () => {
+        const fetchPipelines = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/projects/customer/${customer_id}/`);
-                setProjects(response.data);
+                const response = await axios.get(`${API_BASE_URL}/pipelines/customer/${customer_id}/`);
+                setPipelines(response.data);
             } catch (error) {
-                console.error('Error fetching projects:', error);
+                console.error('Error fetching pipelines:', error);
             }
         };
-        fetchProjects();
+        fetchPipelines();
     }, [customer_id]);
 
     useEffect(() => {
@@ -54,9 +54,9 @@ const ProjectDeviceManagement = () => {
 
     useEffect(() => {
         const fetchGeoLocations = async () => {
-            if (selectedProject) {
+            if (selectedPipeline) {
                 try {
-                    const response = await axios.get(`${API_BASE_URL}/geolocations/project/${selectedProject}/`);
+                    const response = await axios.get(`${API_BASE_URL}/geolocations/pipeline/${selectedPipeline}/`);
                     setGeoLocations(response.data);
                     setPropertyDeviceList(response.data.map(location => ({
                         id: location.id, // Unique identifier for each location
@@ -71,10 +71,10 @@ const ProjectDeviceManagement = () => {
             }
         };
         fetchGeoLocations();
-    }, [selectedProject]);
+    }, [selectedPipeline]);
 
-    const handleProjectChange = (projectId) => {
-        setSelectedProject(projectId);
+    const handlePipelineChange = (pipelineId) => {
+        setSelectedPipeline(pipelineId);
     };
 
     const handleDeviceIdChange = (index, value) => {
@@ -97,8 +97,8 @@ const ProjectDeviceManagement = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         const dataToSubmit = propertyDeviceList.map(device => ({
-            project: selectedProject,
-            project_id: selectedProject,
+            pipeline: selectedPipeline,
+            pipeline_id: selectedPipeline,
             device: device.device,
             geolocation: device.geolocation,  // Submit geolocation ID here
             device_movement: device.device_movement || 0,
@@ -128,21 +128,21 @@ const ProjectDeviceManagement = () => {
                         <CardBody>
                             <Form onSubmit={handleSubmit}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Select Project</Form.Label>
+                                    <Form.Label>Select Pipeline</Form.Label>
                                     <Form.Select
-                                        value={selectedProject}
-                                        onChange={(e) => handleProjectChange(e.target.value)}
+                                        value={selectedPipeline}
+                                        onChange={(e) => handlePipelineChange(e.target.value)}
                                     >
-                                        <option value="">Select a Project</option>
-                                        {projects.map((project) => (
-                                            <option key={project.project_id} value={project.project_id}>
-                                                {project.project_name}
+                                        <option value="">Select a Pipeline</option>
+                                        {pipelines.map((pipeline) => (
+                                            <option key={pipeline.pipeline_id} value={pipeline.pipeline_id}>
+                                                {pipeline.pipeline_name}
                                             </option>
                                         ))}
                                     </Form.Select>
-                                </Form.Group>
+                                </Form.Group>                        
 
-                                {selectedProject && geoLocations.length > 0 && (
+                                {selectedPipeline && geoLocations.length > 0 && (
                                     <Row>
                                         {propertyDeviceList.map((propertyDevice, index) => (
                                             <React.Fragment key={propertyDevice.id}>

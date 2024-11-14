@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Device,DeviceStatus, DeviceType, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,PropertyDeviceDevice,Geolocation,CustomUser,Project,ProjectGeolocation,DeviceGeoPoint,PropertyDeviceGeoPoint,Property,PropertyGeolocation
+from .models import Device,DeviceStatus, DeviceType, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,PropertyDeviceDevice,Geolocation,CustomUser,Project,ProjectGeolocation,DeviceGeoPoint,PropertyDeviceGeoPoint,Property,PropertyGeolocation,Projectpipeline
 
 # Register your models here.
 class DeviceAdmin(admin.ModelAdmin):
@@ -32,12 +32,13 @@ admin.site.register(DeviceType)
 admin.site.register(District)
 admin.site.register(Taluk)
 admin.site.register(Village)
-admin.site.register(Customer)
+#admin.site.register(Customer)
 #admin.site.register(PropertyRegistration)
 #admin.site.register(PropertyDevice)
 #admin.site.register(PropertyDeviceDevice)
 #admin.site.register(Geolocation)
 admin.site.register(Project)
+admin.site.register(Projectpipeline)
 admin.site.register(ProjectGeolocation)
 admin.site.register(DeviceGeoPoint)
 

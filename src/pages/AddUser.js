@@ -118,7 +118,7 @@ const AddCustomer = ({ currentUser }) => {
         await axios.post(`${API_BASE_URL}/customer/add/`, data, { headers });
       }
   
-      navigate('/customers');
+      navigate('/users');
     } catch (error) {
       console.error('Error adding/updating customer:', error.message);
     }

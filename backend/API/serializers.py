@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
-from .models import Device,District,Taluk,Village,Customer,PropertyRegistration,Geolocation,PropertyDevice,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser
+from .models import Device,District,Taluk,Village,Customer,PropertyRegistration,Geolocation,PropertyDevice,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser,Projectpipeline
 User = get_user_model()  # Get the actual User model
 
 
@@ -104,13 +104,45 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['project_id', 'project_name', 'project_state', 'project_city','project_descriptions', 'customer_id']
         
+class ProjectPipelineSerializer(serializers.ModelSerializer):
+    # Change to PrimaryKeyRelatedField for write support
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+    user_names = serializers.SerializerMethodField()  # Read-only field for user names
+    class Meta:
+        model = Projectpipeline
+        fields = ['project', 'pipeline_id', 'pipeline_name', 'pipeline_descriptions', 'customer', 'users','user_names']
+    def get_user_names(self, obj):
+        # Fetch all related users and join their usernames with commas
+        return ", ".join([user.username for user in obj.users.all()])
+    # Optional validation for pipeline name
+    def validate_pipline_name(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError("Pipeline name must be at least 3 characters long.")
+        return value
+    
+class ProjectPipelineSerializer__(serializers.ModelSerializer):
+    # This will display the user names (assuming `username` is a field in the user model)
+    users = serializers.StringRelatedField(many=True)  # This will return the usernames as a list
+    user_names = serializers.SerializerMethodField()  # Read-only field for user names
 
+    class Meta:
+        model = Projectpipeline
+        fields = ['project', 'pipeline_name', 'pipeline_descriptions', 'customer', 'users', 'user_names']
+    def get_user_names(self, obj):
+        # This method will return a list of user names for the users associated with the pipeline
+        return [user.username for user in obj.users.all()]
+    # You can add custom validation here if needed
+    def validate_pipeline_name(self, value):
+        if len(value) < 2:
+            raise serializers.ValidationError("Pipeline name must be at least 3 characters long.")
+        return value
+    
 class ProjectGeolocationSerializer(serializers.ModelSerializer):
-    project_name = serializers.CharField(source='project.project_name', read_only=True)
+    pipeline_name = serializers.CharField(source='projectpipeline.pipeline_name', read_only=True)
 
     class Meta:
         model = ProjectGeolocation
-        fields = ['id', 'project', 'project_name', 'latitude', 'longitude', 'refference_name']
+        fields = ['id', 'projectpipeline', 'pipeline_name', 'latitude', 'longitude', 'refference_name']
 
 
 class PropertyGeolocationSerializer(serializers.ModelSerializer):
@@ -125,7 +157,8 @@ class PropertyGeolocationSerializer(serializers.ModelSerializer):
 
 
 class DeviceGeoPointSerializer(serializers.ModelSerializer):
-    project_name = serializers.CharField(source='project.project_name', read_only=True)
+    pipeline_name = serializers.CharField(source='projectpipeline.pipeline_name', read_only=True)
+    pipeline_id = serializers.CharField(source='projectpipeline.pipeline_id', read_only=True)
     device = serializers.PrimaryKeyRelatedField(queryset=Device.objects.all(), required=False, allow_null=True)  # Allow null and optional
     latitude = serializers.FloatField(source='geolocation.latitude', read_only=True)
     longitude = serializers.FloatField(source='geolocation.longitude', read_only=True)
@@ -135,8 +168,8 @@ class DeviceGeoPointSerializer(serializers.ModelSerializer):
         model = DeviceGeoPoint
         fields = [
             'id',
-            'project_name',
-            'project_id',
+            'pipeline_name',
+            'pipeline_id',
             'device',  # Accept device as a primary key
             'device_id',  # Display the device ID
             'latitude',

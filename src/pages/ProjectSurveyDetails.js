@@ -14,7 +14,7 @@ import {
   faLocationDot,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
-import GeoMap from '../components/GeoMap';
+import ProjectGeoMap from '../components/ProjectGeoMap';
 import { imgPath } from '../components/Constants';
 import axios from 'axios'; // Import axios for making API requests
 import API_BASE_URL from '../config';
@@ -23,6 +23,7 @@ import withAuthRedirect from '../hoc/withAuthRedirect'; // Import the HOC
 
 const SurveyDetails = () => {
   const [surveyData, setSurveyData] = useState({});
+  const [surveyDataArray, setSurveyRow] = useState({});
   const [dataFetched, setDataFetched] = useState(false);
   const { id } = useParams(); // Access the dynamic parameter from the URL
 
@@ -34,9 +35,11 @@ const SurveyDetails = () => {
         const response = await axios.get(
           `${API_BASE_URL}/project-survey-details/${id}/?timestamp=${timestamp}`
         ); // Fetch data based on the ID
-        setSurveyData(response.data); // Update state with the fetched data
+        setSurveyRow(response.data.surveyData); // Update state with the fetched data
+        setSurveyData(response.data.surveyRow); // Update state with the fetched data
         setDataFetched(true); // Set dataFetched to true after data is fetched
         console.log('Helooo444::::', response.data);
+        console.log('Helooo444%%%%%::::', response.data.surveyRow);
       } catch (error) {
         console.error('Error fetching survey data:', error);
       }
@@ -62,6 +65,77 @@ const SurveyDetails = () => {
       document: `${imgPath.SurveyOnePdf}`,
     },
   ];
+
+  const surveyData1 = {
+    "survey_details": {
+      "property_name": "project1", // Fixed typo
+      "pipeline_name": "pipeline2", // Fixed typo
+      "project_state": "project1", // Fixed typo
+      "project_city": "project1", // Fixed typo
+      "p_type": "project"
+    },
+    "devices": [
+      {
+        "device_id": "Dileep32",
+        "device_type": "Bluetooth",
+        "battery_status": "",
+        "device_status": true,
+        "latitude": 13.06,
+        "longitude": 77.51444,
+        "device_movement": 0,
+        "last_updated": "2024-11-14",
+        "points": 1
+      },
+      {
+        "device_id": "Dileep33",
+        "device_type": "Bluetooth",
+        "battery_status": "",
+        "device_status": true,
+        "latitude": 13.067,
+        "longitude": 77.5444,
+        "device_movement": 0,
+        "last_updated": "2024-11-14",
+        "points": 2
+      }
+    ]
+  };
+  
+  const surveyData2 = {
+    "survey_details": {
+      "property_name": "project1", // Fixed typo
+      "pipeline_name": "pipeline1", // Fixed typo
+      "project_state": "project1", // Fixed typo
+      "project_city": "project1", // Fixed typo
+      "p_type": "project"
+    },
+    "devices": [
+      {
+        "device_id": "Dileep30",
+        "device_type": "Bluetooth",
+        "battery_status": "",
+        "device_status": true,
+        "latitude": 13.06,
+        "longitude": 77.43444,
+        "device_movement": 0,
+        "last_updated": "2024-11-14",
+        "points": 1
+      },
+      {
+        "device_id": "Dileep31",
+        "device_type": "Bluetooth",
+        "battery_status": "",
+        "device_status": true,
+        "latitude": 13.054,
+        "longitude": 77.542,
+        "device_movement": 0,
+        "last_updated": "2024-11-14",
+        "points": 2
+      }
+    ]
+  };
+  
+  // Create an array of the survey data
+  //const surveyDataArray2 = [surveyData1, surveyData2];
   return (
     <Container fluid className="section">
       <PageHelmet />
@@ -81,8 +155,17 @@ const SurveyDetails = () => {
                         <p>
                           <FontAwesomeIcon icon={faLayerGroup} />{' '}
                           <span>Project Name :</span>{' '}
-                          {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.property_name
+                          {surveyData && surveyData.property_name
+                            ? surveyData.property_name
+                            : null}
+                        </p>
+                      </Col>
+                      <Col>
+                        <p>
+                          <FontAwesomeIcon icon={faLayerGroup} />{' '}
+                          <span>Pipeline  Name :</span>{' '}
+                          {surveyData && surveyData.pipeline_name
+                            ? surveyData.pipeline_name
                             : null}
                         </p>
                       </Col>
@@ -177,7 +260,9 @@ const SurveyDetails = () => {
                   <Col lg={12}>
                     <Card>
                     <CardBody>
-                        {surveyData && <GeoMap surveyData={surveyData} />}
+                        
+
+                        <ProjectGeoMap surveyDataArray={surveyDataArray} />;
                       </CardBody>
                     </Card>
                   </Col>

@@ -127,9 +127,9 @@ const Sidebar = ({ children }) => {
       },
       {
         id: 2,
-        path: '/customers',
-        name: 'Customers',
-        icon: <img src={imgPath.customers} alt="customers" />,
+        path: '/users',
+        name: 'users',
+        icon: <img src={imgPath.customers} alt="users" />,
       },
       ...(customer_type === 'property'
         ? [
@@ -161,6 +161,12 @@ const Sidebar = ({ children }) => {
               id: 9,
               path: '/project-registration',
               name: 'Project ',
+              icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+            },
+            {
+              id: 9,
+              path: '/pipelines',
+              name: 'Pipeline ',
               icon: <img src={imgPath.propertyRegistration} alt="documents" />,
             },
             {

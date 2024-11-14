@@ -17,18 +17,18 @@ import withAuthRedirect from '../hoc/withAuthRedirect';
 const AddProjectGeolocation = () => {
   const customer_id = localStorage.getItem('id');
   const [geoLocations, setGeoLocations] = useState([{ id: Date.now(), latitude: null, longitude: null }]);
-  const [projectId, setProjectId] = useState('');
+  const [pipelineId, setPipelineId] = useState('');
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [referenceName, setReferenceName] = useState('');
-  const [projects, setProjects] = useState([]); // State to store project list
+  const [pipelines, setPipelines] = useState([]); // State to store project list
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
   const { projectgeolocation } = location.state || {};
   useEffect(() => {
     // Fetch project data
-    fetchProjects();
+    fetchPipelines();
   }, []);
   useEffect(() => {
     if (projectgeolocation) {
@@ -40,10 +40,10 @@ const AddProjectGeolocation = () => {
     }
   }, [projectgeolocation]);
 
-  const fetchProjects = async () => {
+  const fetchPipelines = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/projects/customer/${customer_id}/`); // Adjust endpoint as needed
-      setProjects(response.data); // Update projects state with data from API
+      const response = await axios.get(`${API_BASE_URL}/pipelines/customer/${customer_id}/`); // Adjust endpoint as needed
+      setPipelines(response.data); // Update projects state with data from API
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
@@ -52,8 +52,8 @@ const AddProjectGeolocation = () => {
     event.preventDefault();
     const errors = {};
   
-    if (!projectId) {
-      errors.projectId = 'Project is required';
+    if (!pipelineId) {
+      errors.pipelineId = 'Project is required';
     }
   
     // Validate latitude
@@ -72,7 +72,7 @@ const AddProjectGeolocation = () => {
     if (Object.keys(errors).length === 0) {
       try {
         const payload = {
-          project: projectId,
+          pipeline: pipelineId,
           latitude,
           longitude,
           refference_name: referenceName,
@@ -80,7 +80,7 @@ const AddProjectGeolocation = () => {
   
         if (projectgeolocation) {
           await axios.put(
-            `${API_BASE_URL}/projectgeolocation/update/${projectgeolocation.id}/`,
+            `${API_BASE_URL}/pipelinegeolocation/update/${projectgeolocation.id}/`,
             payload,
             {
               headers: {
@@ -90,7 +90,7 @@ const AddProjectGeolocation = () => {
           );
         } else {
           await axios.post(
-            `${API_BASE_URL}/projectgeolocation/add/${projectId}/`,
+            `${API_BASE_URL}/pipelinegeolocation/add/${pipelineId}/`,
             payload,
             {
               headers: {
@@ -107,51 +107,6 @@ const AddProjectGeolocation = () => {
     }
   };
   
-  const handleSubmit__________ = async (event) => {
-    event.preventDefault();
-    const errors = {};
-  
-    if (!projectId) {
-      errors.projectId = 'Project is required';
-    }
-  
-    setFormErrors(errors);
-    if (Object.keys(errors).length === 0) {
-      try {
-        // Create a JSON payload
-        const payload = {
-          project: projectId,
-          latitude,
-          longitude,
-          refference_name: referenceName,
-        };
-  
-        if (projectgeolocation) {
-          // Update existing geolocation
-          await axios.put(
-            `${API_BASE_URL}/projectgeolocation/update/${projectgeolocation.id}/`, // Pass projectId for update
-            payload, // Use payload instead of formData
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-        } else {
-          // Add new geolocation
-          await axios.post(`${API_BASE_URL}/projectgeolocation/add/${projectId}/`, payload, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-        }
-  
-        navigate('/project-geolocation');
-      } catch (error) {
-        console.error('Error adding project-geolocation:', error.message);
-      }
-    }
-  };
   
   
 
@@ -160,7 +115,7 @@ const AddProjectGeolocation = () => {
     <Container fluid className="section">
       <Row className="g-3 justify-content-center">
         <Col lg={12} className="mb-4">
-          <h2>Add Project Geolocation</h2>
+          <h2>Add Pipeline Geolocation</h2>
         </Col>
         <Col lg={10}>
           <Card className="main-card">
@@ -170,22 +125,22 @@ const AddProjectGeolocation = () => {
                   {/* Project Selection Dropdown */}
                   <Col lg={6}>
                   <Form.Group className="mb-3">
-  <Form.Label>Select Project</Form.Label>
+  <Form.Label>Select Pipeline</Form.Label>
   <Form.Control
     as="select"
-    value={projectId}
-    onChange={(e) => setProjectId(e.target.value)}
-    isInvalid={!!formErrors.projectId}
+    value={pipelineId}
+    onChange={(e) => setPipelineId(e.target.value)}
+    isInvalid={!!formErrors.pipelineId}
   >
-    <option value="">Select a project</option>
-    {projects.map((project) => (
-      <option key={project.project_id} value={project.project_id}>
-        {project.project_name}
+    <option value="">Select a pipeline</option>
+    {pipelines.map((pipeline) => (
+      <option key={pipeline.pipeline_id} value={pipeline.pipeline_id}>
+        {pipeline.pipeline_name}
       </option>
     ))}
   </Form.Control>
   <Form.Control.Feedback type="invalid">
-    {formErrors.projectId}
+    {formErrors.pipelineId}
   </Form.Control.Feedback>
 </Form.Group>
 

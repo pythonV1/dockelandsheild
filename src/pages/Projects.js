@@ -6,7 +6,7 @@ import PageTitle from '../components/PageTitle';
 import PageHelmet from '../components/PageHelmet';
 import { imgPath } from '../components/Constants';
 import axios from 'axios'; // Import axios for making API requests
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { useNavigate,Link } from 'react-router-dom'; // Import useNavigate for navigation
 import API_BASE_URL from '../config';
 import withAuthRedirect from '../hoc/withAuthRedirect'; // Import the HOC
 import ConfirmationModal from '../components/ConfirmationModal'; //
@@ -175,7 +175,8 @@ const ProjectRegistration = () => {
                 headers={headers}
                 rows={projectregistrations.map((projectregistration) => [
                   projectregistration.project_id,
-                  projectregistration.project_name,
+                  <Link key={projectregistration.project_id} to={`/project/survey-details/${deviceGeoPoint.pipeline_id}`}
+    >{projectregistration.project_name}</Link>,
                   projectregistration.project_state,
                   projectregistration.project_city,
                   projectregistration.project_descriptions,

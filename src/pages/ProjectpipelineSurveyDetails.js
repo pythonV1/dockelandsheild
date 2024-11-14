@@ -32,7 +32,7 @@ const SurveyDetails = () => {
         // Generate a timestamp to  in the request URL
         const timestamp = Date.now();
         const response = await axios.get(
-          `${API_BASE_URL}/survey-details/${id}/?timestamp=${timestamp}`
+          `${API_BASE_URL}/project-pipeline-survey-details/${id}/?timestamp=${timestamp}`
         ); // Fetch data based on the ID
         setSurveyData(response.data); // Update state with the fetched data
         setDataFetched(true); // Set dataFetched to true after data is fetched
@@ -67,7 +67,7 @@ const SurveyDetails = () => {
       <PageHelmet />
       <Row className="g-3">
         <Col lg={12}>
-          <PageTitle />
+        
         </Col>
         <Col lg={12}>
           {dataFetched && ( // Only render when data is fetched
@@ -75,22 +75,23 @@ const SurveyDetails = () => {
               <CardBody>
                 <Row className="g-3">
                   <Col lg={12}>
-                    <Row className="row-cols-1 row-cols-sm-1 row-cols-lg-2 row-cols-xl-4 g-3">
+                    <Row className="row-cols-4 row-cols-sm-4 row-cols-lg-2 row-cols-xl-2 g-3">
+                    
                       <Col>
                         <p>
-                          <FontAwesomeIcon icon={faAddressCard} />{' '}
-                          <span>Property ID :</span>{' '}
+                          <FontAwesomeIcon icon={faLayerGroup} />{' '}
+                          <span>Project Name :</span>{' '}
                           {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.survey_number
+                            ? surveyData.survey_details.property_name
                             : null}
                         </p>
                       </Col>
                       <Col>
                         <p>
                           <FontAwesomeIcon icon={faLayerGroup} />{' '}
-                          <span>Property Name :</span>{' '}
+                          <span>Pipeline  Name :</span>{' '}
                           {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.property_name
+                            ? surveyData.survey_details.pipeline_name
                             : null}
                         </p>
                       </Col>
@@ -106,37 +107,25 @@ const SurveyDetails = () => {
                       
                     </Row>
                   </Col>
-                  <Col lg="6">
+                  <Col lg="12">
                     <Card>
                       <CardBody>
-                        <p>
-                          <FontAwesomeIcon icon={faUser} />{' '}
-                          <span>Customer Name : </span>
-                          {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.customer_name
-                            : null}
-                        </p>
+                      
                         <p>
                           <FontAwesomeIcon icon={faLocationDot} />{' '}
-                          <span>District : </span>{' '}
+                          <span>Project State : </span>{' '}
                           {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.district_name
+                            ? surveyData.survey_details.project_state
                             : null}
                         </p>
                         <p>
                           <FontAwesomeIcon icon={faLayerGroup} />{' '}
-                          <span>Village : </span>{' '}
+                          <span>Project City : </span>{' '}
                           {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.village_name
+                            ? surveyData.survey_details.project_city
                             : null}
                         </p>
-                        <p>
-                          <FontAwesomeIcon icon={faLayerGroup} />
-                          <span>Taluk : </span>{' '}
-                          {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.taluk_name
-                            : null}
-                        </p>
+                      
                         <p>
                           <FontAwesomeIcon icon={faCalendarDays} />{' '}
                           <span>Last Updated :</span> {details[0].lastUpdated}
@@ -144,6 +133,8 @@ const SurveyDetails = () => {
                       </CardBody>
                     </Card>
                   </Col>
+                  {surveyData && surveyData.survey_details && surveyData.survey_details.p_type !== 'project' && (
+ 
                   <Col lg="6">
                     <Card>
                       <CardBody>
@@ -191,10 +182,10 @@ const SurveyDetails = () => {
                         </p>
                       </CardBody>
                     </Card>
-                  </Col>
+                  </Col> )}
                   <Col lg={12}>
                     <Card>
-                      <CardBody>
+                    <CardBody>
                         {surveyData && <GeoMap surveyData={surveyData} />}
                       </CardBody>
                     </Card>
@@ -202,7 +193,7 @@ const SurveyDetails = () => {
                   <Col lg={12} className="text-center">
                     <BackButton
                       buttonText={'Back'}
-                      path="/property-device"
+                      path="/device-geopoint"
                     ></BackButton>
                   </Col>
                 </Row>

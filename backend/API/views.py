@@ -11,8 +11,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from rest_framework import viewsets
 from django.db.models import F
-from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser,DeviceStatus
-from .serializers import DeviceSerializer,DistrictSerializer,TalukSerializer,VillageSerializer,CustomerSerializer,PropertyRegistrationSerializer,GeolocationSerializer,PropertyDeviceSerializer,PropertyDeviceDeviceSerializer,ProjectSerializer,ProjectGeolocationSerializer,DeviceGeoPointSerializer,PropertySerializer,PropertyGeolocationSerializer,PropertyDeviceGeoPointSerializer,CustomUserSerializer
+from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser,DeviceStatus,Projectpipeline
+from .serializers import DeviceSerializer,DistrictSerializer,TalukSerializer,VillageSerializer,CustomerSerializer,PropertyRegistrationSerializer,GeolocationSerializer,PropertyDeviceSerializer,PropertyDeviceDeviceSerializer,ProjectSerializer,ProjectGeolocationSerializer,DeviceGeoPointSerializer,PropertySerializer,PropertyGeolocationSerializer,PropertyDeviceGeoPointSerializer,CustomUserSerializer,ProjectPipelineSerializer
 import json
 from json.decoder import JSONDecodeError
 from django.http import JsonResponse
@@ -48,6 +48,14 @@ def customers_list_by_customer(request, user_id):
     if request.method == 'GET':
         # Filter customers where `created_by` matches the provided `user_id`
         customers = CustomUser.objects.filter(created_by_id=user_id)
+        serializer = CustomUserSerializer(customers, many=True)
+        return Response(serializer.data)
+    
+@api_view(['GET'])
+def users_list_by_customer(request, customer_id):
+    if request.method == 'GET':
+        # Filter customers where `created_by` matches the provided `user_id`
+        customers = CustomUser.objects.filter(created_by_id=customer_id)
         serializer = CustomUserSerializer(customers, many=True)
         return Response(serializer.data)
     
@@ -271,14 +279,14 @@ from .serializers import DeviceGeoPointSerializer
 def device_geopoint_list_by_customer(request, customer_id):
     try:
         # Get all projects associated with the given customer ID
-        projects = Project.objects.filter(customer_id=customer_id)
+        projectpipeline = Projectpipeline.objects.filter(customer_id=customer_id)
         
         # Fetch all DeviceGeoPoint records for those projects
-        device_geopoints = DeviceGeoPoint.objects.filter(project__in=projects)
+        device_geopoints = DeviceGeoPoint.objects.filter(projectpipeline__in=projectpipeline)
         
         serializer = DeviceGeoPointSerializer(device_geopoints, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except Project.DoesNotExist:
+    except projectpipeline.DoesNotExist:
         return Response({'error': 'No projects found for this customer'}, status=status.HTTP_404_NOT_FOUND)
     
     
@@ -299,10 +307,10 @@ def create_device_geo_points(request):
             try:
                 device = Device.objects.get(id=item.get('device')) if item.get('device') else None
                 geolocation = ProjectGeolocation.objects.get(id=item.get('geolocation'))
-
+                pipeline_instance = Projectpipeline.objects.get(pipeline_id=item.get('pipeline_id'))
                 # Create or update the DeviceGeoPoint instance
                 device_geo_point, created = DeviceGeoPoint.objects.update_or_create(
-                    project_id=item.get('project_id'),
+                    projectpipeline=pipeline_instance,
                     geolocation=geolocation,
                     defaults={
                         'device': device,
@@ -498,16 +506,33 @@ def project_geolocation_list_byid444444444(request,project_id):
     if request.method == 'GET':
         geolocations = ProjectGeolocation.objects.filter(project__project_id=project_id).values('id','latitude', 'longitude', 'refference_name')
         return JsonResponse(list(geolocations), safe=False)
-@api_view(['GET'])
 
-def project_geolocation_list_byid(request,project_id):
+@api_view(['GET'])
+def pipeline_geolocation_list_byid(request,pipeline_id):
     
     if request.method == 'GET':
-        geolocations = ProjectGeolocation.objects.filter(project__project_id=project_id).annotate(
+        geolocations = ProjectGeolocation.objects.filter(projectpipeline__pipeline_id=pipeline_id).annotate(
             device_id=F('devicegeopoint__device__id')  # Fetch the device_id if linked
         ).values('id','latitude', 'longitude', 'refference_name', 'device_id')
         return JsonResponse(list(geolocations), safe=False)
 
+@api_view(['GET'])
+def pipeline_geolocation_list_byid_______(request, pipeline_id):
+    if request.method == 'GET':
+        try:
+            # Fetch geolocations related to the pipeline
+            geolocations = ProjectGeolocation.objects.filter(
+                device__Projectpipeline__pipeline_id=pipeline_id  # Correctly filter by Projectpipeline
+            ).annotate(
+                device_id=F('devicegeopoint__device__id')  # Access device_id through the device relationship
+            ).values('id', 'latitude', 'longitude', 'refference_name', 'device_id')
+
+            return JsonResponse(list(geolocations), safe=False)
+
+        except ProjectGeolocation.DoesNotExist:
+            return JsonResponse({"error": "Geolocation not found for the specified pipeline."}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
 @api_view(['PUT']) # Ensure 'POST' is in the list of allowed methods
 def add_device_geopoint(request):
@@ -661,10 +686,10 @@ def update_project_geolocation____(request, project_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-def add_project_geolocation(request, project_id):
+def add_pipeline_geolocation(request, pipeline_id):
     try:
         # Fetch the project by project_id
-        project = Project.objects.get(project_id=project_id)
+        pipeline = Projectpipeline.objects.get(pipeline_id=pipeline_id)
 
         # Collect latitude, longitude, and reference_name from request data
         latitude = request.data.get('latitude')
@@ -680,7 +705,7 @@ def add_project_geolocation(request, project_id):
 
         # Create a new ProjectGeolocation instance
         project_geolocation = ProjectGeolocation.objects.create(
-            project=project,
+            projectpipeline=pipeline,
             latitude=latitude,
             longitude=longitude,
             refference_name=reference_name
@@ -713,6 +738,14 @@ def project_geolocation_list(request):
         projectgeolocation = ProjectGeolocation.objects.all()
         serializer = ProjectGeolocationSerializer(projectgeolocation, many=True)
         return Response(serializer.data)
+    
+@api_view(['GET'])
+def project_pipeline_geolocation_list(request):
+    if request.method == 'GET':
+        projectgeolocation = ProjectGeolocation.objects.all()
+        serializer = ProjectGeolocationSerializer(projectgeolocation, many=True)
+        return Response(serializer.data)
+
 
 @api_view(['GET'])
 def project_list_by_customer(request, customer_id):
@@ -734,8 +767,28 @@ def project_list_by_customer(request, customer_id):
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+ 
+
+@api_view(['GET'])
+def pipeline_list_by_customer(request, customer_id):
+    try:
+        # Filter pipelines by customer_id
+        pipelines = Projectpipeline.objects.filter(customer__id=customer_id)
         
+        # Serialize the pipelines data
+        serializer = ProjectPipelineSerializer(pipelines, many=True)
         
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Projectpipeline.DoesNotExist:
+        return Response(
+            {"error": "No pipelines found for the specified customer"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
         
 
@@ -747,7 +800,7 @@ def project_registrations_list(request):
         projects = Project.objects.all()
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
-
+    
 
 
 @api_view(['POST'])
@@ -757,6 +810,25 @@ def add_project_registration(request):
     if serializer.is_valid():
         property_registration = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED) 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser])  # Allow handling of multipart data if needed
+def add_pipeline(request):
+    # Use the serializer to validate and create a new ProjectPipeline instance
+    serializer = ProjectPipelineSerializer(data=request.data)
+    
+    # Check if the data is valid
+    if serializer.is_valid():
+        # Save the validated data to the database
+        pipeline = serializer.save()
+        
+        # Return the serialized data as a response
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    # Return validation errors if the data is not valid
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1421,12 +1493,80 @@ def property_survey_details_api(request, pk):
         return JsonResponse({'error': 'PropertyDevice not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+def project_pipeline_survey_details_api_view(pipeline):
+    # Create a dictionary format for each survey data structure based on a single project
+    survey_details = {
+        "property_name": pipeline.pipeline_name,
+        "pipeline_name": pipeline.pipeline_name,
+        "project_state": pipeline.pipeline_name,
+        "project_city": pipeline.pipeline_name,
+        "p_type": "project"
+    }
+    
+    # Example devices data - adapt this based on your actual device model and fields
+    project_device_geo_points = DeviceGeoPoint.objects.filter(projectpipeline__pipeline_id=pipeline.pipeline_id)
+    
+        # Retrieve the associated devices
+    device_info = []
+    for index ,geo_point in enumerate(project_device_geo_points):
+            device = geo_point.device
+            if device:
+               device_info.append({
+                'device_id': device.device_id,
+                'device_type': device.device_type.name,
+                'battery_status': device.battery_status,
+                'device_status': device.device_status,
+                'latitude': geo_point.geolocation.latitude,
+                'longitude': geo_point.geolocation.longitude,
+                'device_movement': geo_point.device_movement,
+                'last_updated': geo_point.last_updated,
+                
+                'points':index+1,
+               })
+
+    return {"survey_details": survey_details, "devices": device_info}
 
 def project_survey_details_api(request, pk):
+    # Get the project pipelines associated with the provided primary key
+    project_pipelines = Projectpipeline.objects.filter(project_id=pk)
+
+    # Array to hold survey data and survey row
+    survey_data_array = []
+    survey_row = []
+
+    for pipeline in project_pipelines:
+        # Generate survey data for each pipeline
+        survey_data = project_pipeline_survey_details_api_view(pipeline)
+        survey_data_array.append(survey_data)
+        
+        # Generate survey details (survey row) for each project pipeline
+        survey_details = {
+            'property_name': pipeline.pipeline_name,
+            'pipeline_name': pipeline.pipeline_name,
+        
+            'p_type': 'project'
+        }
+        
+        # Append the survey details to the survey_row list
+        survey_row.append(survey_details)
+
+    # Organize the final response structure
+    survey_data_result = {
+        'surveyData': survey_data_array,
+        'surveyRow': survey_row
+    }
+
+    # Return the response as JSON
+    return JsonResponse(survey_data_result, safe=False)
+
+
+def project_pipeline_survey_details_api(request, pk):
     try:
         # Retrieve the PropertyDevice object based on the provided property_device_id
-        project = Project.objects.get(project_id=pk)
-        project_device_geo_points = DeviceGeoPoint.objects.filter(project__project_id=pk)
+        projectpipeline = Projectpipeline.objects.get(pipeline_id=pk)
+        
+        project_device_geo_points = DeviceGeoPoint.objects.filter(projectpipeline__pipeline_id=pk)
     
         # Retrieve the associated devices
         device_info = []
@@ -1453,7 +1593,8 @@ def project_survey_details_api(request, pk):
 
         # Extract survey details from the related PropertyRegistration object
         survey_details = {
-            'property_name': project.project_name,
+            'property_name': projectpipeline.project.project_name,
+            'pipeline_name': projectpipeline.pipeline_name,
            # 'survey_number': project.survey_number,
           #  'survey_sub_division': project.survey_sub_division,
            # 'patta_number': project.patta_number,
@@ -1462,8 +1603,8 @@ def project_survey_details_api(request, pk):
           #  'village': project.village.name,
             #'fmb_url': project.fmb.url,  # Assuming fmb is a FileField
            # 'customer_name': project.district.name,
-            'project_state': project.project_state,
-            'project_city': project.project_city,
+            'project_state': projectpipeline.project.project_state,
+            'project_city': projectpipeline.project.project_city,
             'p_type': 'project',
            # 'taluk_name': project.taluk.name,
             

@@ -6,13 +6,13 @@ import PageTitle from '../components/PageTitle';
 import PageHelmet from '../components/PageHelmet';
 import { imgPath } from '../components/Constants';
 import axios from 'axios'; // Import axios for making API requests
-import { useNavigate,Link } from 'react-router-dom'; // Import useNavigate for navigation
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import API_BASE_URL from '../config';
 import withAuthRedirect from '../hoc/withAuthRedirect'; // Import the HOC
 import ConfirmationModal from '../components/ConfirmationModal'; //
-const ProjectRegistration = () => {
+const Pipelines = () => {
   
-  const [projectregistrations, setprojectregistrations] = useState([]); // State to store device data
+  const [pipelines, setpipelines] = useState([]); // State to store device data
   const [statusMessage, setStatusMessage] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for showing/hiding modal
   const [deleteIndex, setDeleteIndex] = useState(null); // State to store index of item to delete
@@ -20,24 +20,23 @@ const ProjectRegistration = () => {
   const customer_id = localStorage.getItem('id');
   useEffect(() => {
     // Function to fetch device data from the API
-    const fetchprojectregistrations = async () => {
+    const fetchpipelines = async () => {
       try {
         //const response = await axios.get(`${API_BASE_URL}/projectregistrations/`); // Make GET request to the API
-        const response = await axios.get(`${API_BASE_URL}/projects/customer/${customer_id}/`);
-        setprojectregistrations(response.data); // Update state with fetched device data
+        const response = await axios.get(`${API_BASE_URL}/pipelines/customer/${customer_id}/`);
+        setpipelines(response.data); // Update state with fetched device data
       } catch (error) {
         console.error('Error fetching device data:', error);
       }
     };
 
-    fetchprojectregistrations(); // Call the fetchDevices function when the component mounts
+    fetchpipelines(); // Call the fetchDevices function when the component mounts
   }, []); // Empty dependency array ensures the effect runs only once after initial render
   const headers = [
-    'Project ID',
-    'Project Name',
-    'project_state',
-    'project_city',
-    'project_descriptions',
+    'Pipeline ID',
+    'Pipeline Name',
+    'Pipeline descriptions',
+    'Linked Users',
   
   ];
   const rows = [
@@ -85,27 +84,27 @@ const ProjectRegistration = () => {
   const handleEdit = async (rowIndex) => {
     // Check if devices and rowIndex are valid
     if (
-      !projectregistrations ||
+      !pipelines ||
       rowIndex < 0 ||
-      rowIndex >= projectregistrations.length
+      rowIndex >= pipelines.length
     ) {
       return;
     }
 
     // Retrieve the device data from the devices array
-    const projectregistration = projectregistrations[rowIndex];
-    console.log(projectregistration);
+    const pipeline = pipelines[rowIndex];
+    console.log(pipelines);
     console.log('ffffffffffff');
     // Navigate to the AddDevice component with the device data
-    navigate('/project-registration/add-project-registration', {
-      state: { projectregistration },
+    navigate('/pipelines/add-pipeline', {
+      state: { pipelines },
     });
   };
   const handleDelete = async (id) => {
     if (
-      !projectregistrations ||
+      !pipelines ||
       id < 0 ||
-      id >= projectregistrations.length
+      id >= pipelines.length
     ) {
       return;
     }
@@ -117,20 +116,20 @@ const ProjectRegistration = () => {
     try {
       // Delete the device from the server
       await axios.delete(
-        `${API_BASE_URL}/projectregistration/delete/${projectregistrations[deleteIndex].project_id}/`
+        `${API_BASE_URL}/pipelines/delete/${pipelines[deleteIndex].project_id}/`
       );
 
       // Remove the deleted device from the devices state
-      setprojectregistrations((prevProjectRegistrations) => {
+      setpipelines((prevPipelines) => {
         // Filter out the deleted device from the devices array
-        const updatedProjectRegistrations = prevProjectRegistrations.filter(
+        const updatedPipelines = prevPipelines.filter(
           (device, index) => index !== deleteIndex
         );
         console.log(
-          'Project deleted successfully:',
-          updatedProjectRegistrations
+          'pipeline deleted successfully:',
+          updatedPipelines
         );
-        return updatedProjectRegistrations;
+        return updatedPipelines;
       });
       // Set status message
       setStatusMessage('Project Registration deleted successfully');
@@ -153,8 +152,8 @@ const ProjectRegistration = () => {
         >
           <PageTitle />
           <AddButton
-            buttonText={'Add Project Registration'}
-            path="/project-registration/add-project-registration"
+            buttonText={'Add Pipelines'}
+            path="/pipelines/add-pipeline"
           />
         </Col>
         <Col lg={12}>
@@ -172,14 +171,11 @@ const ProjectRegistration = () => {
               )}
               <CommonTable
                 headers={headers}
-                rows={projectregistrations.map((projectregistration) => [
-                  projectregistration.project_id,
-                  <Link key={projectregistration.project_id} to={`/project/survey-details/${projectregistration.project_id}`}
-    >{ projectregistration.project_name}</Link>,
-                  projectregistration.project_state,
-                  projectregistration.project_city,
-                  projectregistration.project_descriptions,
-                
+                rows={pipelines.map((pipeline) => [
+                  pipeline.pipeline_id,
+                  pipeline.pipeline_name,
+                  pipeline.pipeline_descriptions,
+                  pipeline.user_names,
                 ])}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
@@ -197,4 +193,4 @@ const ProjectRegistration = () => {
   );
 };
 
-export default withAuthRedirect(ProjectRegistration);
+export default withAuthRedirect(Pipelines);

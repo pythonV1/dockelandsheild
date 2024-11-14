@@ -5,8 +5,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Login from './pages/Login';
 import './style.css';
 import Signup from './pages/SignUp';
-import Customers from './pages/Customers';
-import AddCustomer from './pages/AddCustomer';
+import Users from './pages/Users';
+import AddUser from './pages/AddUser';
 import Devices from './pages/Devices';
 import District from './pages/District';
 import Taluk from './pages/Taluk';
@@ -19,7 +19,10 @@ import DevicePropertyGeopoint from './pages/DevicePropertyGeopoint';
 import AddDevicePropertyGeopoint from './pages/AddDevicePropertyGeoPoint';
 
 import ProjectRegistration from './pages/ProjectRegistration';
+import Pipeline from './pages/Pipelines';
 import ProjectGeolocation from './pages/ProjectGeolocation';
+import ProjectPipelineGeolocation from './pages/ProjectPipelineGeolocation';
+
 import DeviceGeopoint from './pages/DeviceGeopoint';
 import AddDeviceGeoPoint from './pages/AddDeviceGeoPoint';
 import AddDevice from './pages/AddDevice';
@@ -28,6 +31,7 @@ import AddTaluk from './pages/AddTaluk';
 import AddVillage from './pages/AddVillage';
 import AddPropertyRegistration from './pages/AddPropertyRegistration';
 import AddProjectRegistration from './pages/AddProjectRegistration';
+import AddPipeline from './pages/AddPipeline';
 import AddProjectGeolocation from './pages/AddProjectGeolocation';
 import AddPropertyGeolocation from './pages/AddPropertyGeolocation';
 import PropertyDevice from './pages/PropertyDevice';
@@ -37,6 +41,7 @@ import SurveyDetails from './pages/SurveyDetails';
 import SurveyDetailsTwo from './pages/SurveyDetailsTwo';
 import PropertySurveyDetails from './pages/PropertySurveyDetails';
 import ProjectSurveyDetails from './pages/ProjectSurveyDetails';
+import ProjectPipelineSurveyDetails from './pages/ProjectpipelineSurveyDetails';
 
 
 function App() {
@@ -48,7 +53,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/customers" element={<Customers />} />
+          <Route path="/users" element={<Users />} />
+          
           <Route path="/master/devices" element={<Devices />} />
           <Route path="/master/district" element={<District />} />
           <Route path="/master/taluk" element={<Taluk />} />
@@ -78,9 +84,18 @@ function App() {
             path="/project-registration"
             element={<ProjectRegistration />}
           />
+           <Route
+            path="/pipelines"
+            element={<Pipeline />}
+          />
+          
           <Route
             path="/project-geolocation"
             element={<ProjectGeolocation />}
+          />
+          <Route
+            path="/project-pipeline-geolocation"
+            element={<ProjectPipelineGeolocation />}
           />
            <Route
             path="/device-geopoint"
@@ -98,12 +113,17 @@ function App() {
           />
           <Route path="/master/taluk/add-taluk" element={<AddTaluk />} />
           <Route path="/master/village/add-village" element={<AddVillage />} />
-          <Route path="/customers/add-customer" element={<AddCustomer />} />
+          <Route path="/users/add-User" element={<AddUser />} />
           <Route path="/property/add-property" element={<AddProperty />} />
           <Route
             path="/project-registration/add-project-registration"
             element={<AddProjectRegistration />}
           />
+          <Route
+            path="/pipelines/add-pipeline"
+            element={<AddPipeline />}
+          />
+       
            <Route
             path="/project-geolocation/add-projectgeolocation"
             element={<AddProjectGeolocation />}
@@ -134,7 +154,10 @@ function App() {
             path="/project/survey-details/:id"
             element={<ProjectSurveyDetails />}
           />
-      
+         <Route
+            path="/pipeline/survey-details/:id"
+            element={<ProjectPipelineSurveyDetails />}
+          />
           {/* Updated path for SurveyDetails component */}
           <Route
             path="/property-device/survey-details2"
