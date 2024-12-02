@@ -35,15 +35,15 @@ const Login = () => {
     localStorage.setItem('address', data.address);
     localStorage.setItem('customer_role', data.customer_role);
     localStorage.setItem('customer_type', data.customer_type);
+    localStorage.setItem('company_name', data.company_name);
+    localStorage.setItem('id', data.id);
     //localStorage.setItem('token', data.token);
     if(data.customer_role==='manager')
     { 
-    localStorage.setItem('id', data.created_by_id);
+    
+    localStorage.setItem('superId', data.created_by_id);
     }
-    else
-    {
-    localStorage.setItem('id', data.id);  
-    }
+    
     localStorage.setItem('token', data.token.access);
     // Redirect to Dashboard
     navigate('/dashboard');

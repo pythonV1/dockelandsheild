@@ -23,6 +23,7 @@ const AddCustomer = ({ currentUser }) => {
   const [aadharNumber, setAadharNumber] = useState('');
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm_password, setCPassword] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,7 +31,7 @@ const AddCustomer = ({ currentUser }) => {
   const token = localStorage.getItem('token');
   const customer_type = localStorage.getItem('customer_type');
   const customer_id = localStorage.getItem('id');
-  
+  const company_name = localStorage.getItem('company_name');
   console.log("Token from localStorage:", token); // Check if this prints the token correctly
 
   useEffect(() => {
@@ -65,6 +66,10 @@ const AddCustomer = ({ currentUser }) => {
       case 'password':
         setPassword(value);
         break;
+      case 'confirm_password':
+        setCPassword(value);
+        break;
+        
       default:
         break;
     }
@@ -86,7 +91,10 @@ const AddCustomer = ({ currentUser }) => {
     if (!aadharNumber) errors.aadharNumber = 'Aadhar Number is required';
     if (!address) errors.address = 'Address is required';
     if (!password) errors.password = 'Password is required';
-  
+    if (!confirm_password) errors.confirm_password = 'Confirm Password is required';
+    if (password && confirm_password && password !== confirm_password) {
+      errors.confirm_password = 'Passwords do not match';
+    }
     setFormErrors(errors);
     if (Object.keys(errors).length !== 0) return;
   
@@ -97,6 +105,7 @@ const AddCustomer = ({ currentUser }) => {
         name: customerName,
         username: customerName,
         email: email_id,
+        company_name: company_name,
         mobile_number: mobileNumber,
         aadhar_number: aadharNumber,
         address: address,
@@ -124,50 +133,7 @@ const AddCustomer = ({ currentUser }) => {
     }
   };
   
-  const handleSubmit333333 = async (event) => {
-    event.preventDefault();
-    const errors = {};
-
-    if (!customerName) errors.customerName = 'Customer Name is required';
-    if (!email_id) errors.email_id = 'Email is required';
-    if (!mobileNumber) errors.mobileNumber = 'Mobile Number is required';
-    if (!aadharNumber) errors.aadharNumber = 'Aadhar Number is required';
-    if (!address) errors.address = 'Address is required';
-    if (!password) errors.password = 'Password is required';
-
-    setFormErrors(errors);
-    if (Object.keys(errors).length !== 0) return;
-
-    try {
-      const token = localStorage.getItem('token'); // Get the token from localStorage
-
-      const headers = {
-        Authorization: `Bearer ${token}`, // Include token in the request header
-      };
-
-      const data = {
-        name: customerName,
-        email: email_id,
-        mobile_number: mobileNumber,
-        aadhar_number: aadharNumber,
-        address: address,
-        password: password,
-        created_by: currentUser?.id, // Set the current logged-in user's ID
-      };
-
-      if (customer) {
-        // Update customer if the customer exists
-        await axios.put(`${API_BASE_URL}/customer/update/${customer.customer_id}/`, data, { headers });
-      } else {
-        // Add new customer
-        await axios.post(`${API_BASE_URL}/customer/add/`, data, { headers });
-      }
-
-      navigate('/customers');
-    } catch (error) {
-      console.error('Error adding/updating customer:', error.message);
-    }
-  };
+  
 
   return (
     <Container fluid className="section">
@@ -262,9 +228,9 @@ const AddCustomer = ({ currentUser }) => {
                       <Form.Control
                         type="password"
                         placeholder="Confirm Password"
-                        value={password}
+                        value={confirm_password}
                         onChange={(e) => handleInputChange(e, 'confirm_password')}
-                        isInvalid={!!formErrors.password}
+                        isInvalid={!!formErrors.confirm_password}
                       />
                       <Form.Control.Feedback type="invalid">
                         {formErrors.confirm_password}

@@ -20,7 +20,7 @@ class CustomUserAdmin(UserAdmin):
 
     # Fields shown in the add user form
     add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {'fields': ('mobile_number', 'address','customer_type','customer_role')}),
+        (None, {'fields': ('mobile_number', 'address','company_name','company_address','customer_type','customer_role')}),
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)

@@ -6,8 +6,9 @@ import { imgPath } from './Constants';
 const Header = () => {
   const navigate = useNavigate();
   const customerName = localStorage.getItem('customerName');
+  const company_name = localStorage.getItem('company_name');
   const address = localStorage.getItem('address');
-
+  
   // Handler function for logout
   const handleLogout = () => {
     // Perform API request to logout the user here
@@ -65,6 +66,7 @@ const Header = () => {
                 <Dropdown.Menu>
                   <Dropdown.Item href="#/action-1">
                     <h6>{customerName}</h6>
+                    <h6>{company_name}</h6>
                     <span>{address}</span>
                   </Dropdown.Item>
                   <Dropdown.Divider />

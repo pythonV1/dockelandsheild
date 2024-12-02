@@ -20,6 +20,7 @@ import AddDevicePropertyGeopoint from './pages/AddDevicePropertyGeoPoint';
 
 import ProjectRegistration from './pages/ProjectRegistration';
 import Pipeline from './pages/Pipelines';
+import Pipelineuser from './pages/Pipelines-user';
 import ProjectGeolocation from './pages/ProjectGeolocation';
 import ProjectPipelineGeolocation from './pages/ProjectPipelineGeolocation';
 
@@ -87,6 +88,10 @@ function App() {
            <Route
             path="/pipelines"
             element={<Pipeline />}
+          />
+           <Route
+            path="/pipelines-user"
+            element={<Pipelineuser />}
           />
           
           <Route

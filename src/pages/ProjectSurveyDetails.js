@@ -22,8 +22,9 @@ import { useParams } from 'react-router-dom';
 import withAuthRedirect from '../hoc/withAuthRedirect'; // Import the HOC
 
 const SurveyDetails = () => {
-  const [surveyData, setSurveyData] = useState({});
-  const [surveyDataArray, setSurveyRow] = useState({});
+  const [projectInfo, setProjectInfo] = useState({});
+  const [surveyData, setSurveyRow] = useState({});
+  const [surveyDataArray, setSurveyData] = useState({});
   const [dataFetched, setDataFetched] = useState(false);
   const { id } = useParams(); // Access the dynamic parameter from the URL
 
@@ -35,11 +36,13 @@ const SurveyDetails = () => {
         const response = await axios.get(
           `${API_BASE_URL}/project-survey-details/${id}/?timestamp=${timestamp}`
         ); // Fetch data based on the ID
-        setSurveyRow(response.data.surveyData); // Update state with the fetched data
-        setSurveyData(response.data.surveyRow); // Update state with the fetched data
-        setDataFetched(true); // Set dataFetched to true after data is fetched
+        setProjectInfo(response.data.project_info);
+        setSurveyData(response.data.surveyData); // Update state with the fetched data
+        setSurveyRow(response.data.surveyRow); // Update state with the fetched data
+        setDataFetched(true); // Set dataFetched to true after data is fetchedsurveyRow
         console.log('Helooo444::::', response.data);
         console.log('Helooo444%%%%%::::', response.data.surveyRow);
+        console.log('Helooo444surveyData%%%%%::::', response.data.surveyData);
       } catch (error) {
         console.error('Error fetching survey data:', error);
       }
@@ -155,17 +158,17 @@ const SurveyDetails = () => {
                         <p>
                           <FontAwesomeIcon icon={faLayerGroup} />{' '}
                           <span>Project Name :</span>{' '}
-                          {surveyData && surveyData.property_name
-                            ? surveyData.property_name
+                          {projectInfo && projectInfo.project_name
+                            ? projectInfo.project_name
                             : null}
                         </p>
                       </Col>
                       <Col>
                         <p>
                           <FontAwesomeIcon icon={faLayerGroup} />{' '}
-                          <span>Pipeline  Name :</span>{' '}
-                          {surveyData && surveyData.pipeline_name
-                            ? surveyData.pipeline_name
+                          <span>Total Pipelines :</span>{' '}
+                          {projectInfo && projectInfo.total_pipelines
+                            ? projectInfo.total_pipelines
                             : null}
                         </p>
                       </Col>
@@ -186,17 +189,17 @@ const SurveyDetails = () => {
                       <CardBody>
                       
                         <p>
-                          <FontAwesomeIcon icon={faLocationDot} />{' '}
-                          <span>Project State : </span>{' '}
-                          {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.project_state
+                      <FontAwesomeIcon icon={faLocationDot} />{' '}
+                        <span>Project State : </span>{' '}
+                        {projectInfo && projectInfo.project_state
+                            ? projectInfo.project_state
                             : null}
                         </p>
                         <p>
                           <FontAwesomeIcon icon={faLayerGroup} />{' '}
                           <span>Project City : </span>{' '}
-                          {surveyData && surveyData.survey_details
-                            ? surveyData.survey_details.project_city
+                          {projectInfo && projectInfo.project_city
+                            ? projectInfo.project_city
                             : null}
                         </p>
                       
@@ -269,7 +272,7 @@ const SurveyDetails = () => {
                   <Col lg={12} className="text-center">
                     <BackButton
                       buttonText={'Back'}
-                      path="/device-geopoint"
+                      path="/project-registration"
                     ></BackButton>
                   </Col>
                 </Row>

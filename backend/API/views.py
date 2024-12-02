@@ -1,5 +1,6 @@
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.db.models import Max
 from rest_framework import status
 
 from rest_framework.views import APIView
@@ -11,7 +12,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from rest_framework import viewsets
 from django.db.models import F
-from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser,DeviceStatus,Projectpipeline
+from .models import Device, District,Taluk,Village,Customer,PropertyRegistration,PropertyDevice,Geolocation,PropertyDeviceDevice,Project,ProjectGeolocation,DeviceGeoPoint,Property,PropertyGeolocation,PropertyDeviceGeoPoint,CustomUser,DeviceStatus,Projectpipeline,DeviceType
 from .serializers import DeviceSerializer,DistrictSerializer,TalukSerializer,VillageSerializer,CustomerSerializer,PropertyRegistrationSerializer,GeolocationSerializer,PropertyDeviceSerializer,PropertyDeviceDeviceSerializer,ProjectSerializer,ProjectGeolocationSerializer,DeviceGeoPointSerializer,PropertySerializer,PropertyGeolocationSerializer,PropertyDeviceGeoPointSerializer,CustomUserSerializer,ProjectPipelineSerializer
 import json
 from json.decoder import JSONDecodeError
@@ -75,6 +76,17 @@ def devices_list(request):
         data.append(device_data)
     return Response(data)
 
+@api_view(['GET'])
+def devicetype_list(request):
+    devicetypes = DeviceType.objects.all()
+    data = []
+    for devicetype in devicetypes:
+        devicetype_data = {
+            'id': devicetype.id,
+            'name': devicetype.name,
+        }
+        data.append(devicetype_data)
+    return Response(data)
 
 
 def check_duplicate_device_id(request):
@@ -770,6 +782,29 @@ def project_list_by_customer(request, customer_id):
  
 
 @api_view(['GET'])
+def pipeline_user_list_by_customer(request, customer_id):
+    try:
+        # Filter pipelines by customer_id
+        #pipelines = Projectpipeline.objects.filter(customer__id=customer_id)
+        pipelines = Projectpipeline.objects.filter(users__id=customer_id)
+
+        # Serialize the pipelines data
+        serializer = ProjectPipelineSerializer(pipelines, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Projectpipeline.DoesNotExist:
+        return Response(
+            {"error": "No pipelines found for the specified customer"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    
+@api_view(['GET'])
 def pipeline_list_by_customer(request, customer_id):
     try:
         # Filter pipelines by customer_id
@@ -830,6 +865,28 @@ def add_pipeline(request):
     
     # Return validation errors if the data is not valid
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT', 'PATCH'])
+@parser_classes([MultiPartParser])
+def update_pipeline(request, pk):
+    # Retrieve the project instance
+    pipeline_instance = get_object_or_404(Projectpipeline, pk=pk)
+
+    # Updating the project instance with partial update
+    pipeline_serializer = ProjectPipelineSerializer(instance=pipeline_instance, data=request.data, partial=True)
+    
+    if pipeline_serializer.is_valid():
+        pipeline_serializer.save()
+        return Response(pipeline_serializer.data, status=status.HTTP_200_OK)  # Return 200 for successful update
+    
+    return Response(pipeline_serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Return validation errors if any
+  
+@api_view(['DELETE'])
+def delete_pipeline(request, pk):
+    projectpipeline = get_object_or_404(Projectpipeline, pk=pk)
+    projectpipeline.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 @api_view(['PUT', 'PATCH'])
@@ -1501,6 +1558,7 @@ def project_pipeline_survey_details_api_view(pipeline):
         "pipeline_name": pipeline.pipeline_name,
         "project_state": pipeline.pipeline_name,
         "project_city": pipeline.pipeline_name,
+        'pipeline_id': pipeline.pipeline_id,
         "p_type": "project"
     }
     
@@ -1530,10 +1588,12 @@ def project_pipeline_survey_details_api_view(pipeline):
 def project_survey_details_api(request, pk):
     # Get the project pipelines associated with the provided primary key
     project_pipelines = Projectpipeline.objects.filter(project_id=pk)
+    project = Project.objects.get(project_id=pk)
 
     # Array to hold survey data and survey row
     survey_data_array = []
     survey_row = []
+    
 
     for pipeline in project_pipelines:
         # Generate survey data for each pipeline
@@ -1544,6 +1604,7 @@ def project_survey_details_api(request, pk):
         survey_details = {
             'property_name': pipeline.pipeline_name,
             'pipeline_name': pipeline.pipeline_name,
+            'pipeline_id': pipeline.pipeline_id,
         
             'p_type': 'project'
         }
@@ -1552,11 +1613,21 @@ def project_survey_details_api(request, pk):
         survey_row.append(survey_details)
 
     # Organize the final response structure
+    project_info = {
+            'project_name': project.project_name,
+            'pipeline_name': project.project_name,
+            'project_state': project.project_state,
+            'project_city': project.project_city,
+            'total_pipelines': len(survey_data_array),
+        
+            'p_type': 'project'
+        }
     survey_data_result = {
+        'project_info': project_info,
         'surveyData': survey_data_array,
         'surveyRow': survey_row
     }
-
+   
     # Return the response as JSON
     return JsonResponse(survey_data_result, safe=False)
 
@@ -1567,7 +1638,9 @@ def project_pipeline_survey_details_api(request, pk):
         projectpipeline = Projectpipeline.objects.get(pipeline_id=pk)
         
         project_device_geo_points = DeviceGeoPoint.objects.filter(projectpipeline__pipeline_id=pk)
-    
+          # Retrieve the latest single `last_updated` date
+        latest_last_updated = project_device_geo_points.aggregate(Max('last_updated'))['last_updated__max']
+
         # Retrieve the associated devices
         device_info = []
         for index ,geo_point in enumerate(project_device_geo_points):
@@ -1595,6 +1668,7 @@ def project_pipeline_survey_details_api(request, pk):
         survey_details = {
             'property_name': projectpipeline.project.project_name,
             'pipeline_name': projectpipeline.pipeline_name,
+            'latest_last_updated': latest_last_updated,  
            # 'survey_number': project.survey_number,
           #  'survey_sub_division': project.survey_sub_division,
            # 'patta_number': project.patta_number,
@@ -1625,7 +1699,7 @@ def project_pipeline_survey_details_api(request, pk):
         }
         
         return JsonResponse(response_data, status=200)
-    except project.DoesNotExist:
+    except projectpipeline.DoesNotExist:
         return JsonResponse({'error': 'project not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -1646,7 +1720,7 @@ class LoginAPI(APIView):
             }
             created_by = user.created_by.username if user.created_by else None
             created_by_id = user.created_by.id if user.created_by else None
-            return Response({'message': 'Login successful', 'token': token,'customerName':user.first_name,'id': user.id,'address':user.last_name,'customer_type':user.customer_type,'customer_role':user.customer_role,'created_by_id':created_by_id}, status=status.HTTP_200_OK)
+            return Response({'message': 'Login successful', 'token': token,'customerName':user.first_name,'id': user.id,'address':user.last_name,'company_name':user.company_name,'customer_type':user.customer_type,'customer_role':user.customer_role,'created_by_id':created_by_id}, status=status.HTTP_200_OK)
         else:
             # Invalid credentials
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)

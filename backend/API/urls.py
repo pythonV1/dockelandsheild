@@ -9,7 +9,7 @@ from .views import (
     project_geolocation_list,
     add_property_registration, property_registrations_list, update_property_registration, delete_property_registration,
     add_property_device, property_device_list, update_property_device, delete_property_device,
-    geolocations_by_propertyregistrations, survey_details_api,project_list_by_customer,add_pipeline_geolocation,delete_project_geolocation,update_project_geolocation,device_geopoint_list,add_device_geopoint,pipeline_geolocation_list_byid,create_device_geo_points,device_geopoint_list_by_customer,add_property,property_list,update_property,delete_property,properties_by_customer,add_property_geolocation,delete_property_geolocation,update_property_geolocation,property_geolocation_list,device_property_geopoint_list_by_customer,property_list_by_customer,property_geolocation_list_byid,create_device_property_geo_points,propertygeolocation_by_customer,devices_list_by_customer,property_survey_details_api,project_survey_details_api,check_duplicate_device_id,dashboard_data_by_customer,customers_list_by_customer,device_current_status_check,device_status_detail_view,CustomerLoginAPI,users_list_by_customer,add_pipeline,pipeline_list_by_customer,project_pipeline_geolocation_list,project_pipeline_survey_details_api
+    geolocations_by_propertyregistrations, survey_details_api,project_list_by_customer,add_pipeline_geolocation,delete_project_geolocation,update_project_geolocation,device_geopoint_list,add_device_geopoint,pipeline_geolocation_list_byid,create_device_geo_points,device_geopoint_list_by_customer,add_property,property_list,update_property,delete_property,properties_by_customer,add_property_geolocation,delete_property_geolocation,update_property_geolocation,property_geolocation_list,device_property_geopoint_list_by_customer,property_list_by_customer,property_geolocation_list_byid,create_device_property_geo_points,propertygeolocation_by_customer,devices_list_by_customer,property_survey_details_api,project_survey_details_api,check_duplicate_device_id,dashboard_data_by_customer,customers_list_by_customer,device_current_status_check,device_status_detail_view,CustomerLoginAPI,users_list_by_customer,add_pipeline,pipeline_list_by_customer,project_pipeline_geolocation_list,project_pipeline_survey_details_api,devicetype_list,delete_pipeline,update_pipeline,pipeline_user_list_by_customer
 )
 
 urlpatterns = [
@@ -19,6 +19,7 @@ urlpatterns = [
     path('dashboard/customer/<int:customer_id>/', dashboard_data_by_customer, name='dashboard_data_by_customer'),
 
     # Device Management
+    path('devicetypes/', devicetype_list, name='devicetype-list'),
     path('device/add/', add_device, name='add-device'),
     path('devices/', devices_list, name='devices-list'),
     path('devices/customer/<int:customer_id>/', devices_list_by_customer, name='devices-list-by-customer'),
@@ -63,6 +64,10 @@ urlpatterns = [
         # Pipeline Registration and Geolocation
     path('pipeline/add/', add_pipeline, name='add-pipeline'),
     path('pipelines/customer/<int:customer_id>/', pipeline_list_by_customer, name='pipeline-list-by_customer'),
+    path('pipelines-user/customer/<int:customer_id>/', pipeline_user_list_by_customer, name='pipeline-list-by_customer'),
+    
+    path('pipelines/delete/<int:pk>/', delete_pipeline, name='delete-pipeline'),
+    path('pipeline/update/<int:pk>/', update_pipeline, name='update-pipeline'),
     #path('projectregistration/update/<int:pk>/', update_project_registration, name='update-project-registration'),
     #path('projectregistration/delete/<int:pk>/', delete_project_registration, name='delete-project-registration'),
     #path('projectgeolocation/', project_geolocation_list, name='project-geolocation-list'),

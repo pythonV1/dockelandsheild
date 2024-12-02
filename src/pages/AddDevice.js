@@ -9,6 +9,7 @@ import withAuthRedirect from '../hoc/withAuthRedirect'; // Import the HOC
 
 const AddDevice = ({ setStatusMessage }) => {
   const [deviceID, setDeviceID] = useState('');
+  const [devicetypes, setDeviceTypes] = useState([]);
   const [device_type_id, setDeviceTypeID] = useState('');
   const [deviceStatus, setDeviceStatus] = useState(false); // New state for device status
   const [errorMessage, setErrorMessage] = useState(''); // State for duplicate device ID error
@@ -18,11 +19,33 @@ const AddDevice = ({ setStatusMessage }) => {
   const customer_id = localStorage.getItem('id');
 
   useEffect(() => {
+    
+    const fetchdevicetypes= async () => {
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/devicetypes/`
+        ); // Make GET request to the API
+        //console.log('Error fetching device data:');
+       
+        setDeviceTypes(response.data); // Update state with fetched device data
+        console.log("vineeshddddddddddddddddddd1234")
+        console.log(response.data)
+        console.log("vineeshddddddddddddddddddd1234")
+        console.log(devicetypes)
+        console.log("ddddddddddddddddddd")
+      } catch (error) {
+        console.error('Error fetching device data:', error);
+      }
+    };
+
+    fetchdevicetypes(); //
+    
     if (device) {
       setDeviceID(device.device_id);
       setDeviceTypeID(device.device_type_id);
       setDeviceStatus(device.device_status); // Set initial status if editing
     }
+  
   }, [device]);
 
   const handleSubmit = async (event) => {
@@ -99,17 +122,19 @@ const AddDevice = ({ setStatusMessage }) => {
                   <Col lg={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Device Type</Form.Label>
-                      <Form.Select
-                        aria-label="Default select example"
-                        value={device_type_id}
-                        onChange={(e) => setDeviceTypeID(e.target.value)}
-                        required
-                      >
-                        <option value="">Select Device Type</option>
-                        <option value="1">Bluetooth</option>
-                        <option value="2">WiFi</option>
-                        <option value="3">GSM</option>
-                      </Form.Select>
+                      <Form.Select 
+  aria-label="Select Device Type"
+  value={device_type_id}
+  onChange={(e) => setDeviceTypeID(e.target.value)}
+  required
+>
+  <option value="">Select Device Type</option>
+  {devicetypes.map((device) => (
+    <option key={device.id} value={device.id}>
+      {device.name}
+    </option>
+  ))}
+</Form.Select>
                     </Form.Group>
                   </Col>
                   <Col lg={6}>

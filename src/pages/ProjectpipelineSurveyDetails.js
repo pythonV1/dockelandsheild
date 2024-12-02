@@ -14,7 +14,7 @@ import {
   faLocationDot,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
-import GeoMap from '../components/GeoMap';
+import PipelineGeoMap from '../components/PipelineGeoMap';
 import { imgPath } from '../components/Constants';
 import axios from 'axios'; // Import axios for making API requests
 import API_BASE_URL from '../config';
@@ -128,7 +128,15 @@ const SurveyDetails = () => {
                       
                         <p>
                           <FontAwesomeIcon icon={faCalendarDays} />{' '}
-                          <span>Last Updated :</span> {details[0].lastUpdated}
+                          <span>Last Updated :</span>
+{surveyData && surveyData.survey_details && surveyData.survey_details.latest_last_updated
+    ? new Date(surveyData.survey_details.latest_last_updated).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    : null}
+
                         </p>
                       </CardBody>
                     </Card>
@@ -186,7 +194,7 @@ const SurveyDetails = () => {
                   <Col lg={12}>
                     <Card>
                     <CardBody>
-                        {surveyData && <GeoMap surveyData={surveyData} />}
+                        {surveyData && <PipelineGeoMap surveyData={surveyData} />}
                       </CardBody>
                     </Card>
                   </Col>

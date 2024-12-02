@@ -12,7 +12,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['id','username', 'email', 'mobile_number', 'address', 'status', 'customer_type', 'customer_role', 'password', 'created_by']
+        fields = ['id','username', 'email', 'mobile_number', 'address', 'status','company_name', 'customer_type', 'customer_role', 'password', 'created_by']
     
     def create(self, validated_data):
         # Pop the password from validated_data and create the user instance
@@ -106,11 +106,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         
 class ProjectPipelineSerializer(serializers.ModelSerializer):
     # Change to PrimaryKeyRelatedField for write support
+    project_id = serializers.IntegerField(source='project.project_id', read_only=True)  # Extract project_id
+  
     users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
     user_names = serializers.SerializerMethodField()  # Read-only field for user names
     class Meta:
         model = Projectpipeline
-        fields = ['project', 'pipeline_id', 'pipeline_name', 'pipeline_descriptions', 'customer', 'users','user_names']
+        fields = ['project','project_id', 'pipeline_id', 'pipeline_name', 'pipeline_descriptions', 'customer', 'users','user_names']
     def get_user_names(self, obj):
         # Fetch all related users and join their usernames with commas
         return ", ".join([user.username for user in obj.users.all()])

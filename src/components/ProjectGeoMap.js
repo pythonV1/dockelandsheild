@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Button, Table, Badge } from 'react-bootstrap'; // Import Bootstrap modal components
 import { imgPath } from './Constants';
-
+import { useNavigate,Link } from 'react-router-dom';
 const GeoMapMultiple = ({ surveyDataArray }) => {
   const mapRef = useRef(null);
   const [deviceInfo, setDeviceInfo] = useState([]);
@@ -61,17 +61,16 @@ const GeoMapMultiple = ({ surveyDataArray }) => {
         : { url: `${imgPath.deactivateLoc}`, scaledSize: new window.google.maps.Size(20, 20) },
     }));
  
-
-    const defaultPolygon = new window.google.maps.Polygon({
-      paths: defaultPolygonCoords,
-      editable: false,
+    const defaultPolyline = new window.google.maps.Polyline({
+      path: defaultPolygonCoords,  // The array of LatLng coordinates
+      geodesic: true,
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,
       strokeWeight: 2,
-      fillColor: '#FF0000',
-      fillOpacity: 0.35,
     });
-    defaultPolygon.setMap(map);
+    
+   
+    defaultPolyline.setMap(map);
     setGeofence(defaultPolygonCoords);
     setGeofenceChosen(true);
 
@@ -126,7 +125,7 @@ const GeoMapMultiple = ({ surveyDataArray }) => {
   // Modal control
   const handleModalShow = () => setShowModal(true);
   const handleModalClose = () => setShowModal(false);
-
+  let flag = 1; 
   return (
     <>
       <div ref={mapRef} style={{ height: '480px', width: '100%' }}></div>
@@ -137,28 +136,24 @@ const GeoMapMultiple = ({ surveyDataArray }) => {
             <thead>
               <tr>
                 <th>Sl No</th>
-                <th>Geo Location</th>
-                <th>Device Id</th>
-                <th>Battery health</th>
-                <th>Status</th>
+                <th>Pipeline Name</th>
+                <th>Total Device</th>
+              
               </tr>
             </thead>
             <tbody>
-              {geofence.map((coord, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>
-                    Lat: {coord.lat} , Lng: {coord.lng}
-                  </td>
-                  {deviceInfo[index] && (
-                    <>
-                      <td>{deviceInfo[index].deviceId}</td>
-                      <td>{deviceInfo[index].batteryHealth}</td>
-                      <td>{deviceInfo[index].status}</td>
-                    </>
-                  )}
-                </tr>
-              ))}
+           
+            {surveyDataArray.map((surveyData, index) =>    
+            surveyData.devices.length > 0 && ( // Add the condition here
+               <tr key={index}>
+                     <td>{flag++}</td>
+                     <td> <Link key={surveyData.survey_details.pipeline_name} to={`/pipeline/survey-details/${surveyData.survey_details.pipeline_id}`}
+    >{surveyData.survey_details.pipeline_name}</Link></td>
+                     <td>{surveyData.devices.length}</td>
+                     
+               </tr>
+               ))}
+             
             </tbody>
           </Table>
         </>

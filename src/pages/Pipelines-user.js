@@ -23,7 +23,7 @@ const Pipelines = () => {
     const fetchpipelines = async () => {
       try {
         //const response = await axios.get(`${API_BASE_URL}/projectregistrations/`); // Make GET request to the API
-        const response = await axios.get(`${API_BASE_URL}/pipelines/customer/${customer_id}/`);
+        const response = await axios.get(`${API_BASE_URL}/pipelines-user/customer/${customer_id}/`);
         setpipelines(response.data); // Update state with fetched device data
       } catch (error) {
         console.error('Error fetching device data:', error);

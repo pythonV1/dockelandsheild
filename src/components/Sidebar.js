@@ -68,6 +68,27 @@ const Sidebar = ({ children }) => {
             name: 'Dashboard',
             icon: <img src={imgPath.dashboard} alt="dashboard" />,
           },
+          {
+            id: 2,
+            path: '/',
+            name: 'Master',
+            icon: <img src={imgPath.master} alt="master" />,
+            subMenu: [
+              {
+                sub_id: 1,
+                path: '/master/devices',
+                name: 'Devices',
+              },
+             
+             
+            ],
+          },
+          {
+            id: 9,
+            path: '/pipelines-user',
+            name: 'Pipeline ',
+            icon: <img src={imgPath.propertyRegistration} alt="documents" />,
+          },
             {
               id: 10,
               path: '/project-geolocation',

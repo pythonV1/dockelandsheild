@@ -18,6 +18,8 @@ class CustomUser(AbstractUser):
         blank=True
     )
     mobile_number = models.CharField(max_length=15)
+    company_name = models.CharField(max_length=15, null=True, blank=True)
+    company_address = models.TextField(null=True, blank=True)
     address = models.TextField()
 
     STATUS_CHOICES = [
@@ -110,7 +112,7 @@ class ProjectGeolocation(models.Model):
     refference_name = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"Location for {self.Projectpipeline.pipeline_name}"
+        return f"Location for {self.projectpipeline.pipeline_name}"
     
 class DeviceGeoPoint(models.Model):
     projectpipeline = models.ForeignKey(Projectpipeline, on_delete=models.CASCADE, to_field='pipeline_id', default=1, null=True, blank=True)

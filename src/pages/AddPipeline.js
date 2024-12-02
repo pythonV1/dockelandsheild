@@ -57,6 +57,9 @@ const AddPipeline = () => {
       setPipelineID(pipeline.id);
       setPipelineName(pipeline.pipeline_name);
       setPipelineDescription(pipeline.pipeline_descriptions);
+      console.log('hello222',pipeline.project_id)
+      console.log('hello',pipeline.pipeline_name)
+      console.log('vineesh')
       setSelectedProject(pipeline.project_id);
       setSelectedUsers(pipeline.users.map(user => user.id));
     }

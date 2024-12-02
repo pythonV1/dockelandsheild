@@ -181,7 +181,7 @@ const SurveyDetails = () => {
                           <a
                             href={
                               surveyData && surveyData.survey_details
-                                ? `http://localhost:8000${surveyData.survey_details.fmb_url}`
+                                ? `http://13.202.221.203:8000${surveyData.survey_details.fmb_url}`
                                 : null
                             }
                             target="_blank"
