@@ -104,7 +104,7 @@ const GeoMapTwo = ({ surveyData }) => {
             ? { url: `${imgPath.deactivateLoc}`, scaledSize: new window.google.maps.Size(20, 20) }
             : device_info.device_movement === 1
             ? { url: `${imgPath.gifLoc}`, scaledSize: new window.google.maps.Size(50, 50) }
-            : { url: `${imgPath.deactivateLoc}`, scaledSize: new window.google.maps.Size(20, 20) },
+            : { url: `${imgPath.loc}`, scaledSize: new window.google.maps.Size(20, 20) },
         }));
         const deviceData = surveyData.devices.map((device_info) => ({
           deviceId: device_info.device_id,
