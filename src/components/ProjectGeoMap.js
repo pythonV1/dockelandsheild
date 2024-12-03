@@ -58,7 +58,7 @@ const GeoMapMultiple = ({ surveyDataArray }) => {
         ? { url: `${imgPath.deactivateLoc}`, scaledSize: new window.google.maps.Size(20, 20) }
         : device_info.device_movement === 1
         ? { url: `${imgPath.gifLoc}`, scaledSize: new window.google.maps.Size(50, 50) }
-        : { url: `${imgPath.deactivateLoc}`, scaledSize: new window.google.maps.Size(20, 20) },
+        : { url: `${imgPath.loc}`, scaledSize: new window.google.maps.Size(20, 20) },
     }));
  
     const defaultPolyline = new window.google.maps.Polyline({

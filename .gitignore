@@ -1,6 +1,7 @@
 # Custom configuration file
 config.js
 
+*.pyc
 # dependencies
 /node_modules
 /.pnp
