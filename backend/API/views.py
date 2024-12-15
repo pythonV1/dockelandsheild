@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.db.models import Max
 from rest_framework import status
-
+import requests
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import parser_classes
@@ -112,7 +112,8 @@ def devices_list_by_customer(request, customer_id):
             'device_type': device.device_type.name,  # Assuming 'device_type' is a ForeignKey to your DeviceType model
             'device_type_id': device.device_type.id,
             'battery_status': device.battery_status,
-            'device_status': device.device_status
+            'device_status': device.device_status,
+            'device_movement': device.device_movement
         }
         data.append(device_data)
     return Response(data)
@@ -942,10 +943,15 @@ def property_list(request):
     
 @api_view(['GET'])
 def properties_by_customer(request, customer_id):
+    
     try:
         # Filter projects by customer_id
-        property = Property.objects.filter(customer__id=customer_id)
-        
+        customer = CustomUser.objects.get(id=customer_id)
+        if customer.customer_role =='manager':
+            property = Property.objects.filter(users__id=customer_id)
+        else:
+            property = Property.objects.filter(customer__id=customer_id)
+            
         # Serialize the project data
         serializer = PropertySerializer(property, many=True)
         
@@ -967,7 +973,7 @@ def properties_by_customer(request, customer_id):
 def update_property(request, pk):
   
     # Fetching the property registration instance
-    property_update = get_object_or_404(property, pk=pk)
+    property_update = get_object_or_404(Property, pk=pk)
     
     # Updating the property registration instance
     property_serializer = PropertySerializer(instance=property_update, data=request.data, partial=True)
@@ -1059,7 +1065,12 @@ def update_property_geolocation(request, project_id):
 def device_property_geopoint_list_by_customer(request, customer_id):
     try:
         # Get all projects associated with the given customer ID
-        properties = Property.objects.filter(customer_id=customer_id)
+        #properties = Property.objects.filter(customer_id=customer_id)
+        customer = CustomUser.objects.get(id=customer_id)
+        if customer.customer_role =='manager':
+            properties = Property.objects.filter(users__id=customer_id)
+        else:
+            properties = Property.objects.filter(customer__id=customer_id)
         
         # Fetch all DeviceGeoPoint records for those projects
         device_geopoints = PropertyDeviceGeoPoint.objects.filter(property__in=properties)
@@ -1074,7 +1085,12 @@ def device_property_geopoint_list_by_customer(request, customer_id):
 def propertygeolocation_by_customer(request, customer_id):
     try:
         # Get all projects associated with the given customer ID
-        properties = Property.objects.filter(customer_id=customer_id)
+        customer = CustomUser.objects.get(id=customer_id)
+        if customer.customer_role =='manager':
+            properties = Property.objects.filter(users__id=customer_id)
+        else:
+            properties = Property.objects.filter(customer__id=customer_id)
+        #properties = Property.objects.filter(customer_id=customer_id)
         
         # Fetch all DeviceGeoPoint records for those projects
         device_geopoints = PropertyGeolocation.objects.filter(property__in=properties)
@@ -1493,6 +1509,7 @@ def property_survey_details_api(request, pk):
     
         # Retrieve the associated devices
         device_info = []
+        latest_last_updated = None  # Variable to hold the latest last_updated time
         for index,geo_point in enumerate(property_device_geo_points):
             device = geo_point.device
             if device:
@@ -1501,14 +1518,16 @@ def property_survey_details_api(request, pk):
                 'device_type': device.device_type.name,
                 'battery_status': device.battery_status,
                 'device_status': device.device_status,
-                'device_movement': geo_point.device_movement,
+                'device_movement': device.device_movement,
                 'latitude': geo_point.geolocation.latitude,
                 'longitude': geo_point.geolocation.longitude,
                 
                 'points': index+1,
                 'last_updated': geo_point.last_updated,
                })
-    
+               # Update the latest_last_updated with the latest date found
+               if latest_last_updated is None or geo_point.last_updated > latest_last_updated:
+                  latest_last_updated = geo_point.last_updated
         #serializer = PropertyDeviceGeoPointSerializer(property_device_geopoints, many=True)
         #print(serializer.data);
         #property_registration = property.property_id
@@ -1531,6 +1550,9 @@ def property_survey_details_api(request, pk):
             'p_type': 'property',
             
         }
+         # Add the latest 'last_updated' to survey details if available
+        if latest_last_updated:
+            survey_details['latest_last_updated'] = latest_last_updated
         
         # Retrieve related devices from PropertyDeviceDevice model
         #devices = PropertyDeviceDevice.objects.filter(property=property_device)
@@ -1577,7 +1599,7 @@ def project_pipeline_survey_details_api_view(pipeline):
                 'device_status': device.device_status,
                 'latitude': geo_point.geolocation.latitude,
                 'longitude': geo_point.geolocation.longitude,
-                'device_movement': geo_point.device_movement,
+                'device_movement': device.device_movement,
                 'last_updated': geo_point.last_updated,
                 
                 'points':index+1,
@@ -1653,7 +1675,7 @@ def project_pipeline_survey_details_api(request, pk):
                 'device_status': device.device_status,
                 'latitude': geo_point.geolocation.latitude,
                 'longitude': geo_point.geolocation.longitude,
-                'device_movement': geo_point.device_movement,
+                'device_movement': device.device_movement,
                 'last_updated': geo_point.last_updated,
                 
                 'points':index+1,
@@ -1813,7 +1835,50 @@ def device_current_status_check(request):
         return JsonResponse({"error": "Method Not Allowed"}, status=405)
     
 
+def send_notifications(customer, device_id):
+    template_id = "67529260d6fc0532e6649323"
+    api_key = '278449AKrmJ8hfkJ6752d26cP1'
+    api_key = '278449AKrmJ8hfkJ6752d26cP1'
+    
+    project = "My Project"
+    mobile_number = customer.mobile_number
+    
+    # For testing purposes, setting a static mobile number
+    mobile_number = '919113508529'
+    
+    url = "https://control.msg91.com/api/v5/flow/"
+    
+    headers = {
+        "authkey": api_key,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "flow_id": template_id,
+        "recipients": [
+            {
+                "mobiles": mobile_number,
+                "var_device_id": device_id,
+                "var_project": project
+            }
+        ]
+    }
 
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response_data = response.json()
+        
+        if response.status_code == 200 and response_data.get("type") == "success":
+            print("SMS sent successfully!")
+            return True  # Return True to indicate success
+        else:
+            print(f"Failed to send SMS. Response: {response_data}")
+            return False  # Return False for failure
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return False  # Return False if an exception occurred
+    
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser])
 @csrf_exempt
@@ -1839,6 +1904,21 @@ def device_status_detail_view(request):
         
         # Retrieve the PropertyDeviceDevice object using device_id
         device = get_object_or_404(Device, device_id=device_id)
+        # Update the Device object with the new data
+        device.battery_status = battery_status
+        device.device_movement = device_movement
+        device.save()
+        sms_sent = send_notifications(device.customer, device.device_id)
+        if device_movement == 1:
+          sms_sent = send_notifications(device.customer, device.device_id)
+          if not sms_sent:
+              return JsonResponse({"error": "Failed to send SMS notification."}, status=500)
+          else:
+              return JsonResponse({"error": "Failedeeeeeee to send SMS notification."}, status=500)
+
+# Proceed with the rest of the processing if SMS was sent successfully
+
+        
         customer = device.customer
         customer_type = customer.customer_type
 
@@ -1857,18 +1937,62 @@ def device_status_detail_view(request):
           project_geopoint.save()
         
         # Create a new DeviceStatus object
-        device_status_obj = DeviceStatus.objects.create(
+    
+        # Update or create the DeviceStatus record
+        DeviceStatus.objects.update_or_create(
             device_id=device_id,
-            battery_status=battery_status,
-            device_status=device_status,
-            device_log=device_log,
-            device_lat=device_lat,
-            device_gforce=device_gforce,
-            device_movement=device_movement,
+            defaults={
+                'battery_status': battery_status,
+                'device_status': device_status,
+                'device_log': device_log,
+                'device_lat': device_lat,
+                'device_gforce': device_gforce,
+                'device_movement': device_movement,
+            }
         )
         
+        template_id = "5f4258b6d6fc052683650aae        5555"
+        api_key = '5f4258b6d6fc052683650aae'
+        project = "My Project"
+        mobile_number = customer.mobile_number
+    
+        # For testing purposes, setting a static mobile number
+        mobile_number = '9113508529'
+    
+        url = "https://control.msg91.com/api/v5/flow/"
+    
+        headers = {
+        "authkey": api_key,
+        "Content-Type": "application/json"}
+        payload = {
+        "flow_id": template_id,
+        "recipients": [
+            {
+                "mobiles": mobile_number,
+                "var_device_id": device_id,
+                "var_project": project
+            }
+          ]
+        }
+
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response_data = response.json()
+            if response.status_code == 200 and response_data.get("type") == "success":
+                print("SMS sent successfully!")
+                return JsonResponse({"detail33333333444": f"Device status created for gven device {device_id} VVV {device_movement} and movement updated."}, status=201)
+            else:
+               print(f"Failed to send SMS. Response: {response_data}")
+               #return False  # Return False if an exception occurred
+               return JsonResponse({"detail33333333": f"Device status created for gven device {device_id} VVV {device_movement} and movement updated."}, status=201)
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            
+            return JsonResponse({"detail5555": f"Device status created for gven device {device_id} VVV {device_movement} and movement updated."}, status=201)
+        
         # Return a success response
-        return JsonResponse({"detail": f"Device status created for device {device_id} and movement updated."}, status=201)
+       #return JsonResponse({"detail": f"Device status created for gven device {device_id} VVV {device_movement} and movement updated."}, status=201)
     
     except ValueError:
         # Return an error response for invalid parameter values

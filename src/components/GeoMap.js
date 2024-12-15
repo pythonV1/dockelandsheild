@@ -197,7 +197,7 @@ const GeoMapTwo = ({ surveyData }) => {
       // Define the callback function to execute when the API is loaded
       window.initMap = initMap;
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=drawing`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCqAw9r1eg5XK7f-aaFcgCeUZOZUAoL9IM&libraries=drawing`;
       document.body.appendChild(script);
     }
   }, []);

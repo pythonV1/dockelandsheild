@@ -138,7 +138,14 @@ const SurveyDetails = () => {
                         </p>
                         <p>
                           <FontAwesomeIcon icon={faCalendarDays} />{' '}
-                          <span>Last Updated :</span> {details[0].lastUpdated}
+                          <span>Last Updated :</span>
+{surveyData && surveyData.survey_details && surveyData.survey_details.latest_last_updated
+    ? new Date(surveyData.survey_details.latest_last_updated).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    : null}
                         </p>
                       </CardBody>
                     </Card>
@@ -180,7 +187,7 @@ const SurveyDetails = () => {
                           <a
                             href={
                               surveyData && surveyData.survey_details
-                                ? `http://localhost:8000${surveyData.survey_details.fmb_url}`
+                                ? `http://13.202.221.203:8000${surveyData.survey_details.fmb_url}`
                                 : null
                             }
                             target="_blank"

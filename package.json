@@ -2,6 +2,7 @@
   "name": "dashboard",
   "version": "0.1.0",
   "private": true,
+  //"homepage": "http://localhost:3000/web/landshield/",
   "homepage": "http://13.202.221.203:3000/web/landshield/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",

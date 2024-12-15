@@ -45,7 +45,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Device
-        fields = ['device_id', 'device_type', 'battery_status','device_status','customer_id']
+        fields = ['device_id', 'device_type', 'battery_status','device_status','device_movement','customer_id']
         
 class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
@@ -251,10 +251,14 @@ class PropertySerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), 
         source='customer'
     )
+    users = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True)
+    user_names = serializers.SerializerMethodField()  # Read-only field for user names
     class Meta:
         model = Property
-        fields = ['property_id', 'property_name','district', 'district_name', 'taluk', 'taluk_name','village','village_name','survey_number','survey_sub_division','patta_number','area','fmb','customer_id']
-         
+        fields = ['property_id', 'property_name','district', 'district_name', 'taluk', 'taluk_name','village','village_name','survey_number','survey_sub_division','patta_number','area','fmb','customer_id', 'users','user_names']
+    def get_user_names(self, obj):
+        # Fetch all related users and join their usernames with commas
+        return ", ".join([user.username for user in obj.users.all()]) 
     def get_district_name(self, obj):
         return obj.district.name if obj.district else None
     def get_taluk_name(self, obj):

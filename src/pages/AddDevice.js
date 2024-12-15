@@ -12,6 +12,7 @@ const AddDevice = ({ setStatusMessage }) => {
   const [devicetypes, setDeviceTypes] = useState([]);
   const [device_type_id, setDeviceTypeID] = useState('');
   const [deviceStatus, setDeviceStatus] = useState(false); // New state for device status
+  const [deviceMovement, setDeviceMovement] = useState(0); // New state for device status
   const [errorMessage, setErrorMessage] = useState(''); // State for duplicate device ID error
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +45,7 @@ const AddDevice = ({ setStatusMessage }) => {
       setDeviceID(device.device_id);
       setDeviceTypeID(device.device_type_id);
       setDeviceStatus(device.device_status); // Set initial status if editing
+      setDeviceMovement(device.device_movement); // Set initial status if editing
     }
   
   }, [device]);
@@ -75,6 +77,7 @@ const AddDevice = ({ setStatusMessage }) => {
           device_id: deviceID,
           device_type: device_type_id,
           device_status: deviceStatus, // Include device status
+          device_movement: deviceMovement, // Include device status
         });
       } else {
         await axios.post(`${API_BASE_URL}/device/add/`, {
@@ -82,6 +85,7 @@ const AddDevice = ({ setStatusMessage }) => {
           device_type: device_type_id,
           customer_id: customer_id,
           device_status: deviceStatus, // Include device status
+          device_movement: deviceMovement, // Include device status
         });
       }
       navigate('/master/devices');
@@ -147,6 +151,18 @@ const AddDevice = ({ setStatusMessage }) => {
                       />
                     </Form.Group>
                   </Col>
+                  <Col lg={6}>
+  <Form.Group className="mb-3">
+    <Form.Check
+      type="checkbox"
+      label="Device Movement"
+      checked={deviceMovement === 1} // Convert numeric value to boolean for the checkbox
+      onChange={(e) => setDeviceMovement(e.target.checked ? 1 : 0)} // Convert boolean to numeric value
+    />
+  </Form.Group>
+</Col>
+
+                
                   <Col lg={12} className="text-center">
                     <Button type="submit" className="btn-main me-2">
                       Submit

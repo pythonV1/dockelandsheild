@@ -7,8 +7,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    command: npm start  # Start the React app in development mode
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - DANGEROUSLY_DISABLE_HOST_CHECK=true
       - HOST=0.0.0.0
       

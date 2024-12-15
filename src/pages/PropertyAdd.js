@@ -35,8 +35,9 @@ axios.interceptors.request.eject(axios.interceptors.request.use(() => {}));
 
 const Addproperties = () => {
  
- 
-  const [propertiesID, setpropertiesID] = useState('');
+  const [users, setUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  //const [propertiesID, setpropertiesID] = useState('');
   const [propertyName, setPropertyName] = useState('');
   const [taluktID, setTalukID] = useState('');
   const [taluks, setTaluks] = useState([]);
@@ -53,8 +54,24 @@ const Addproperties = () => {
   const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
-  const { properties } = location.state || {};
+  const { propertyinfo } = location.state || {};
   const customer_id = localStorage.getItem('id');
+
+   // Fetch Projects and Users
+   useEffect(() => {
+    const fetchProjectsAndUsers = async () => {
+      try {
+        
+        const usersResponse = await axios.get(`${API_BASE_URL}/users/customer/${customer_id}/`);
+      
+        setUsers(usersResponse.data);
+      } catch (error) {
+        console.error('Error fetching projects and users:', error);
+      }
+    };
+    fetchProjectsAndUsers();
+  }, []);
+
   useEffect(() => {
     const fetchDistricts = async () => {
       try {
@@ -66,24 +83,30 @@ const Addproperties = () => {
     };
     fetchDistricts();
   }, []);
+  
   useEffect(() => {
-    if (properties) {
-      setpropertiesID(properties.id);
-      setPropertyName(properties.property_name);
-      setSurveyNumber(properties.survey_number);
-      setDistrictID(properties.district);
-      fetchTaluks(properties.district);
-      setTalukID(properties.taluk);
-      fetchVillages(properties.taluk);
-      setVillageID(properties.village);
-      setSurveySubDivision(properties.survey_sub_division);
-      setPattaNumber(properties.patta_number);
-      setArea(properties.area);
-      
+    if (propertyinfo) {
+      //setpropertiesID(propertyinfo.id);
+      setPropertyName(propertyinfo.property_name);
+      setSurveyNumber(propertyinfo.survey_number);
+      setDistrictID(propertyinfo.district);
+      fetchTaluks(propertyinfo.district);
+      setTalukID(propertyinfo.taluk);
+      fetchVillages(propertyinfo.taluk);
+      setVillageID(propertyinfo.village);
+      setSurveySubDivision(propertyinfo.survey_sub_division);
+      setPattaNumber(propertyinfo.patta_number);
+      setArea(propertyinfo.area);
+      setSelectedUsers(propertyinfo.users.map(user => user));
+     
+      console.log("ggggggggggggggg55555555555555555666666::::")
+      console.log(propertyinfo.users.map(user => user))
+      console.log("ggggggggggggggg555555555555555666666666::::")
+      console.log(propertyinfo)
 
-      setFmbFile(properties.fmb);
+      setFmbFile(propertyinfo.fmb);
     }
-  }, [properties]);
+  }, [propertyinfo]);
 
  
 
@@ -140,6 +163,10 @@ const Addproperties = () => {
       case 'villageID':
         setVillageID(e.target.value);
         break;
+      case 'selectedUsers':
+          const selected = Array.from(e.target.selectedOptions, option => option.value);
+          setSelectedUsers(selected);
+          break;
 
       // Add cases for other fields if needed
       default:
@@ -199,9 +226,15 @@ const Addproperties = () => {
       formData.append('area', area);
       formData.append('fmb', fmbFile);
       formData.append('customer_id', customer_id);
-      if (properties) {
+      selectedUsers.forEach(user => {
+        formData.append('users', user);
+      });
+      
+      if (propertyinfo) {
+        
+
         await axios.put(
-          `${API_BASE_URL}/properties/update/${properties.id}/`,
+          `${API_BASE_URL}/properties/update/${propertyinfo.property_id}/`,
           formData,
           {
             headers: {
@@ -239,7 +272,7 @@ const Addproperties = () => {
                 <Row className="g-2">
                   <Col lg={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Property Name</Form.Label>
+                      <Form.Label>Property Name44 </Form.Label>
                       <Form.Control
                         type="text"
                         placeholder="Property Name"
@@ -391,6 +424,30 @@ const Addproperties = () => {
                         onChange={handleFileChange}
                         required
                       />
+                    </Form.Group>
+                  </Col>
+           
+                  <Col lg={6}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Users</Form.Label>
+                      <Form.Control
+                        as="select"
+                        multiple
+                        value={selectedUsers}
+                        onChange={(e) => handleChange(e, 'selectedUsers')}
+                        isInvalid={!!formErrors.selectedUsers}
+                      >
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.username}
+                            
+                   
+                          </option>
+                        ))}
+                      </Form.Control>
+                      <Form.Control.Feedback type="invalid">
+                        {formErrors.selectedUsers}
+                      </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
                   <Col lg={12} className="text-center">

@@ -13,6 +13,7 @@ import ConfirmationModal from '../components/ConfirmationModal'; //
 
 const PropertyRegistration = () => {
   const customer_id = localStorage.getItem('id');
+  const customer_role = localStorage.getItem('customer_role');
   const [properties, setproperties] = useState([]); // State to store device data
   const [statusMessage, setStatusMessage] = useState(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); // State for showing/hiding modal
@@ -98,11 +99,11 @@ const PropertyRegistration = () => {
     }
 
     // Retrieve the device data from the devices array
-    const propertyregistration = properties[rowIndex];
-    console.log(propertyregistration);
+    const propertyinfo = properties[rowIndex];
+    
     // Navigate to the AddDevice component with the device data
     navigate('/property/add-property', {
-      state: { propertyregistration },
+      state: { propertyinfo },
     });
   };
   const handleDelete = async (id) => {
@@ -156,10 +157,11 @@ const PropertyRegistration = () => {
           className="d-flex justify-content-between align-items-center"
         >
           <PageTitle />
+          {customer_role !== 'manager' && (
           <AddButton
             buttonText={'Add Property'}
             path="/property/add-property"
-          />
+          /> )}
         </Col>
         <Col lg={12}>
           <Card className="main-card">
@@ -189,7 +191,7 @@ const PropertyRegistration = () => {
                   propertyregistration.fmb,
                 ])}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={customer_role !== 'manager' ? handleDelete : undefined}
               />
             </CardBody>
           </Card>

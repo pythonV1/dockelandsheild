@@ -99,7 +99,7 @@ class Device(models.Model):
     battery_status = models.CharField(max_length=100, default='')
     device_status = models.BooleanField(default=False)  # BooleanField
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='device')
-    
+    device_movement = models.IntegerField(default=0)
     def __str__(self):
         return f"{self.device_id} - {self.device_type.name}"
 
@@ -120,9 +120,10 @@ class DeviceGeoPoint(models.Model):
     geolocation = models.ForeignKey(ProjectGeolocation, on_delete=models.CASCADE)
     device_movement = models.IntegerField(default=0)
     last_updated = models.DateField(auto_now=True)
+    
 
     def __str__(self):
-        return f"Location for {self.project.project_name}"
+        return f"Location for {self.projectpipeline.pipeline_name}"
 
 class DeviceGeoPointworkingold(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, to_field='project_id')
@@ -179,6 +180,11 @@ class Property(models.Model):
     area = models.CharField(max_length=100)
     fmb = models.FileField(upload_to='fmb_pdfs')
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='property')
+    users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        blank=True, 
+        related_name='property_as_user'
+    )  # 
   
    
 class PropertyGeolocation(models.Model):
