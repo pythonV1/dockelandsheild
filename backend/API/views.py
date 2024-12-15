@@ -1834,7 +1834,50 @@ def device_current_status_check(request):
         # Return a response indicating that the HTTP method is not allowed
         return JsonResponse({"error": "Method Not Allowed"}, status=405)
     
+def send_notifications1(customer, device_id):
+    template_id = "67529260d6fc0532e6649323"
+    api_key = '278449AKrmJ8hfkJ6752d26cP1'
+    api_key = '278449AKrmJ8hfkJ6752d26cP1'
+    
+    project = "My Project"
+    mobile_number = customer.mobile_number
+    mobile_number = '91' + str(customer.mobile_number)
+    # For testing purposes, setting a static mobile number
+    mobile_number = '919113508529'
+    
+    url = "https://control.msg91.com/api/v5/flow/"
+    
+    headers = {
+        "authkey": api_key,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "flow_id": template_id,
+        "recipients": [
+            {
+                "mobiles": mobile_number,
+                "var_device_id": device_id,
+                "var_project": project
+            }
+        ]
+    }
 
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response_data = response.json()
+        
+        if response.status_code == 200 and response_data.get("type") == "success":
+            print("SMS sent successfully!")
+            return True  # Return True to indicate success
+        else:
+            print(f"Failed to send SMS. Response: {response_data}")
+            return False  # Return False for failure
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return False  # Return False if an exception occurred
+    
 def send_notifications(customer, device_id):
     template_id = "67529260d6fc0532e6649323"
     api_key = '278449AKrmJ8hfkJ6752d26cP1'
@@ -1842,9 +1885,9 @@ def send_notifications(customer, device_id):
     
     project = "My Project"
     mobile_number = customer.mobile_number
-    
+    mobile_number = '91' + str(customer.mobile_number)
     # For testing purposes, setting a static mobile number
-    mobile_number = '919113508529'
+    #mobile_number = '919113508529'
     
     url = "https://control.msg91.com/api/v5/flow/"
     
@@ -1908,7 +1951,7 @@ def device_status_detail_view(request):
         device.battery_status = battery_status
         device.device_movement = device_movement
         device.save()
-        sms_sent = send_notifications(device.customer, device.device_id)
+        sms_sent = send_notifications1(device.customer, device.device_id)
         if device_movement == 1:
           sms_sent = send_notifications(device.customer, device.device_id)
           if not sms_sent:
